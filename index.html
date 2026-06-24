@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#042C53">
+<title>Njare</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--navy:#042C53;--blue:#185FA5;--blue-mid:#378ADD;--blue-lite:#E6F1FB;--teal:#0F6E56;--teal-lite:#E1F5EE;--green:#3B6D11;--green-lite:#EAF3DE;--amber:#854F0B;--amber-lite:#FAEEDA;--coral:#993C1D;--gray-d:#2C2C2A;--gray-m:#5F5E5A;--gray-l:#B4B2A9;--gray-xl:#F1EFE8;--white:#fff}
+html,body{height:100%;background:#f8f7f4;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--gray-d);overscroll-behavior:none}
+#app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;background:var(--white)}
+.topbar{background:var(--navy);padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.back-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0}
+.back-btn.show{display:flex}
+.topbar-info{flex:1;min-width:0}
+.topbar-title{color:#fff;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-sub{color:rgba(255,255,255,.5);font-size:12px;margin-top:1px}
+.bottomnav{background:var(--white);border-top:0.5px solid #e0ddd6;display:flex;padding-bottom:env(safe-area-inset-bottom,0px);flex-shrink:0}
+.bnav-btn{flex:1;padding:10px 0 8px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--gray-l);font-size:10px;font-weight:500}
+.bnav-btn.active{color:var(--blue)}
+.bnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page{display:none}
+.page.active{display:block;padding-bottom:16px}
+.week-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+.week-strip::-webkit-scrollbar{display:none}
+.wk-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid var(--gray-l);color:var(--gray-m);cursor:pointer}
+.wk-pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.wk-pill.complete{background:var(--green-lite);color:var(--green);border-color:var(--green)}
+.sec-label{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--gray-l);padding:10px 16px 4px;text-transform:uppercase}
+.today-banner{margin:8px 12px;border-radius:14px;padding:14px 16px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.today-banner h3{font-size:15px;font-weight:700}
+.today-banner p{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+.go-btn{background:rgba(255,255,255,.18);border:none;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.day-card{margin:0 12px 8px;border-radius:14px;overflow:hidden;border:0.5px solid #e0ddd6}
+.day-hdr{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.day-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:10px}
+.day-name{font-size:15px;font-weight:600}
+.day-type{font-size:12px;margin-top:1px}
+.today-tag{font-size:10px;padding:2px 7px;border-radius:10px;color:#fff;margin-left:6px;vertical-align:middle;font-weight:600}
+.day-exlist{border-top:0.5px solid #e0ddd6}
+.ex-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:0.5px solid #f0ede6;cursor:pointer;-webkit-user-select:none;user-select:none}
+.ex-row:last-child{border-bottom:none}
+.ex-row:active{background:#f5f3ef}
+.ex-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.ex-check.ticked{background:var(--teal);border-color:var(--teal)}
+.ex-check svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .15s}
+.ex-check.ticked svg{opacity:1}
+.ex-info{flex:1;min-width:0}
+.ex-name{font-size:14px;font-weight:500}
+.ex-meta{font-size:11px;color:var(--gray-l);margin-top:2px}
+.ex-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ex-reps{font-size:13px;font-weight:700;color:var(--blue)}
+.ex-chevron{font-size:20px;color:var(--gray-l)}
+.ex-row.done .ex-name{color:var(--gray-l);text-decoration:line-through}
+.ex-row.done .ex-reps{color:var(--gray-l)}
+.rest-hdr{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.rest-badge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;color:#fff}
+.eve-block{border-top:0.5px solid #9FE1CB;background:#f2fbf7;padding:10px 14px}
+.eve-title{font-size:12px;font-weight:600;color:var(--teal);margin-bottom:6px}
+.eve-item{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.eve-item-name{color:var(--gray-m)}
+.eve-item-dur{color:var(--teal);font-weight:500}
+.panel-wrap{position:relative;overflow:hidden}
+.ex-panel{position:absolute;top:0;left:0;right:0;background:var(--white);transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);z-index:10;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:100vh}
+.ex-panel.open{transform:translateX(0)}
+.ex-panel-hero{padding:20px 20px 16px;border-bottom:0.5px solid #e0ddd6}
+.ex-panel-name{font-size:21px;font-weight:700;margin-bottom:3px}
+.ex-panel-muscle{font-size:13px;color:var(--gray-m)}
+.ex-panel-badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;margin-top:8px}
+.anim-box{background:#f4f2ee;border-bottom:0.5px solid #e0ddd6;display:flex;align-items:center;justify-content:center;padding:12px 0;min-height:180px}
+.sets-section{padding:14px 20px;border-bottom:0.5px solid #e0ddd6}
+.sets-head{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between}
+.sets-head span:last-child{font-size:12px;color:var(--gray-l);font-weight:400}
+.sets-grid{display:flex;gap:10px;flex-wrap:wrap}
+.set-btn{width:58px;height:58px;border-radius:14px;border:1.5px solid #e0ddd6;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:2px}
+.set-btn.done{background:var(--teal-lite);border-color:var(--teal)}
+.set-num{font-size:16px;font-weight:700;color:var(--gray-d)}
+.set-lbl{font-size:9px;font-weight:600;color:var(--gray-l);text-transform:uppercase;letter-spacing:.04em}
+.set-btn.done .set-num{color:var(--teal)}
+.set-btn.done .set-lbl{color:var(--teal)}
+.set-ck{width:18px;height:18px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center}
+.set-ck svg{width:10px;height:10px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.timer-section{padding:14px 20px;border-bottom:0.5px solid #e0ddd6}
+.timer-head{font-size:13px;font-weight:600;margin-bottom:14px}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.timer-ring{position:relative;width:140px;height:140px}
+.timer-ring svg{transform:rotate(-90deg)}
+.ring-bg{stroke:#e0ddd6;stroke-width:10;fill:none}
+.ring-fg{stroke:var(--blue);stroke-width:10;fill:none;stroke-linecap:round;transition:stroke-dashoffset .95s linear}
+.ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:34px;font-weight:800;color:var(--navy)}
+.ring-unit{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--gray-l)}
+.t-btns{display:flex;gap:10px}
+.t-btn{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+.t-start{background:var(--blue);color:#fff}
+.t-stop{background:#E24B4A;color:#fff}
+.t-reset{background:var(--gray-xl);color:var(--gray-d)}
+.t-done{background:var(--teal);color:#fff}
+.howto-section{padding:14px 20px;border-bottom:0.5px solid #e0ddd6}
+.howto-head{font-size:13px;font-weight:600;margin-bottom:10px}
+.howto-step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--blue-lite);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:var(--gray-m);line-height:1.5}
+.tip-box{background:var(--amber-lite);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:12px;color:var(--amber);line-height:1.5}
+.mark-wrap{padding:16px 20px}
+.mark-btn{width:100%;padding:15px;border-radius:14px;font-size:16px;font-weight:700;border:none;cursor:pointer}
+.mark-pending{background:var(--teal);color:#fff}
+.mark-complete{background:var(--green-lite);color:var(--green);border:1.5px solid var(--green)}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 12px 4px;gap:2px}
+.cal-dow{font-size:10px;font-weight:600;color:var(--gray-l);text-align:center;text-transform:uppercase;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 12px 12px}
+.cal-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;gap:2px}
+.cal-cell .cn{font-size:13px;font-weight:500}
+.cal-cell .cd{width:5px;height:5px;border-radius:50%}
+.cal-cell.empty{pointer-events:none}
+.cal-cell.train{background:#E6F1FB}.cal-cell.train .cn{color:#0C447C}.cal-cell.train .cd{background:#378ADD}
+.cal-cell.rest{background:#E1F5EE}.cal-cell.rest .cn{color:#085041}.cal-cell.rest .cd{background:#0F6E56}
+.cal-cell.done{background:#EAF3DE}.cal-cell.done .cn{color:#27500A}.cal-cell.done .cd{background:#3B6D11}
+.cal-cell.done::after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;background:#3B6D11;border-radius:50%}
+.cal-cell.today .cn{font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.cal-cell.faded{opacity:.3}
+.prog-hero{background:var(--navy);padding:20px 16px;color:#fff}
+.prog-hero h2{font-size:22px;font-weight:700}
+.prog-hero p{font-size:13px;color:rgba(255,255,255,.5);margin-top:3px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 12px 0}
+.stat-card{background:var(--white);border:0.5px solid #e0ddd6;border-radius:12px;padding:14px}
+.stat-val{font-size:28px;font-weight:800;color:var(--navy)}
+.stat-lbl{font-size:12px;color:var(--gray-l);margin-top:2px}
+.bar-card{margin:10px 12px 0;background:var(--white);border:0.5px solid #e0ddd6;border-radius:12px;padding:14px}
+.bar-lbl-row{display:flex;justify-content:space-between;font-size:13px;font-weight:500;margin-bottom:8px}
+.bar-bg{background:#e0ddd6;border-radius:6px;height:10px;overflow:hidden}
+.bar-fill{height:10px;border-radius:6px;background:var(--blue);transition:width .5s}
+.wk-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #f0ede6}
+.wk-row:last-child{border-bottom:none}
+.wk-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.wk-name{flex:1;font-size:13px;font-weight:500}
+.wk-track{width:70px;height:5px;background:#e0ddd6;border-radius:3px;overflow:hidden}
+.wk-fill{height:5px;border-radius:3px;background:var(--blue)}
+.wk-pct{font-size:12px;color:var(--gray-m);min-width:30px;text-align:right}
+@keyframes fall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(300px) rotate(540deg);opacity:0}}
+.cp{position:absolute;width:8px;height:8px;border-radius:2px;animation:fall 1.2s ease-in forwards;pointer-events:none}
+.cfwrap{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:0;overflow:visible;z-index:999;pointer-events:none}
+@keyframes pu{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+@keyframes sq{0%,100%{transform:translateY(0)}50%{transform:translateY(22px)}}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes lu{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+@keyframes pup{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes su{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+@keyframes bu{0%{transform:translateY(0) scaleY(1)}40%{transform:translateY(20px) scaleY(.7)}80%{transform:translateY(0) scaleY(1)}90%{transform:translateY(-12px) scaleY(1.05)}100%{transform:translateY(0) scaleY(1)}}
+@keyframes mc{0%,100%{transform:rotate(0)}35%{transform:rotate(8deg)}65%{transform:rotate(-8deg)}}
+@keyframes ru{0%,100%{transform:translateX(-14px)}50%{transform:translateX(14px)}}
+@keyframes br{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes vu{0%,100%{transform:rotate(0) translateY(0)}50%{transform:rotate(-22deg) translateY(-8px)}}
+@keyframes dp{0%,100%{transform:translateY(0)}50%{transform:translateY(20px)}}
+@keyframes hg{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+.perf-hero{background:linear-gradient(135deg,#2D1B69 0%,#534AB7 100%);padding:22px 16px;color:#fff}
+.perf-hero h2{font-size:22px;font-weight:700}
+.perf-hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
+.perf-week-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+.perf-week-strip::-webkit-scrollbar{display:none}
+.perf-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid #C5C2F0;color:#534AB7;cursor:pointer;background:#fff}
+.perf-pill.active{background:#534AB7;color:#fff;border-color:#534AB7}
+.perf-pill.complete{background:#EAF3DE;color:#3B6D11;border-color:#3B6D11}
+.kegel-card{margin:0 12px 10px;border-radius:14px;overflow:hidden;border:0.5px solid #e0ddd6;background:#fff}
+.kegel-hdr{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;background:#F3F1FC;cursor:pointer}
+.kegel-hdr-left{display:flex;align-items:center;gap:10px}
+.kegel-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kegel-title{font-size:14px;font-weight:600;color:#2D1B69}
+.kegel-sub{font-size:11px;color:#534AB7;margin-top:2px}
+.kegel-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:16px}
+.kegel-body{padding:14px 16px;border-top:0.5px solid #EEEDFE}
+.kegel-sets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.kegel-set-btn{padding:8px 14px;border-radius:10px;border:1.5px solid #EEEDFE;background:#fff;font-size:12px;font-weight:600;color:#534AB7;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px}
+.kegel-set-btn.done{background:#EAF3DE;border-color:#3B6D11;color:#3B6D11}
+.kegel-set-btn .ks-num{font-size:15px;font-weight:700}
+.kegel-set-btn .ks-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
+.kegel-timer-row{display:flex;align-items:center;gap:10px;background:#F3F1FC;border-radius:10px;padding:10px 14px;margin-bottom:10px}
+.kegel-timer-num{font-size:28px;font-weight:800;color:#2D1B69;min-width:52px}
+.kegel-timer-lbl{font-size:11px;color:#534AB7;flex:1}
+.kegel-t-btn{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#534AB7;color:#fff}
+.kegel-t-btn.stop{background:#E24B4A}
+.kegel-t-btn.done-state{background:#3B6D11}
+.kegel-t-btn.reset-btn{background:#F3F1FC;color:#534AB7;margin-right:6px}
+.kegel-tip{font-size:12px;color:#5F5E5A;line-height:1.5;background:#FAEEDA;border-radius:8px;padding:8px 12px}
+.kegel-tip strong{color:#854F0B}
+.perf-info-card{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#F3F1FC;border:0.5px solid #EEEDFE}
+.perf-info-title{font-size:13px;font-weight:600;color:#2D1B69;margin-bottom:8px}
+.perf-info-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.perf-info-dot{width:8px;height:8px;border-radius:50%;background:#534AB7;flex-shrink:0;margin-top:4px}
+.perf-info-text{font-size:12px;color:#5F5E5A;line-height:1.5}
+.perf-overall{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.perf-ov-title{font-size:13px;font-weight:600;color:#2D1B69;margin-bottom:10px}
+.perf-ov-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.perf-ov-lbl{font-size:12px;color:#5F5E5A;flex:1}
+.perf-ov-bar{width:80px;height:6px;background:#e0ddd6;border-radius:3px;overflow:hidden}
+.perf-ov-fill{height:6px;border-radius:3px;background:#534AB7}
+.perf-ov-pct{font-size:12px;color:#534AB7;font-weight:600;min-width:32px;text-align:right}
+
+.fat-hero{background:linear-gradient(135deg,#7B1F1F 0%,#C0392B 100%);padding:22px 16px;color:#fff}
+.fat-hero h2{font-size:22px;font-weight:700}
+.fat-hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
+.fat-week-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+.fat-week-strip::-webkit-scrollbar{display:none}
+.fat-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid #E8A89F;color:#C0392B;cursor:pointer;background:#fff}
+.fat-pill.active{background:#C0392B;color:#fff;border-color:#C0392B}
+.fat-pill.complete{background:#EAF3DE;color:#3B6D11;border-color:#3B6D11}
+.fat-info{margin:8px 12px 10px;border-radius:14px;padding:14px 16px;background:#FEF0EE;border:0.5px solid #F5C6C0}
+.fat-info-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:8px}
+.fat-info-item{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start}
+.fat-info-dot{width:8px;height:8px;border-radius:50%;background:#C0392B;flex-shrink:0;margin-top:4px}
+.fat-info-text{font-size:12px;color:#5F5E5A;line-height:1.5}
+.fat-session-card{margin:0 12px 10px;border-radius:14px;overflow:hidden;border:0.5px solid #e0ddd6;background:#fff}
+.fat-session-hdr{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;background:#FEF0EE}
+.fat-session-hdr-left{display:flex;align-items:center;gap:10px}
+.fat-session-icon{width:36px;height:36px;border-radius:10px;background:#FAECE7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fat-session-title{font-size:14px;font-weight:600;color:#7B1F1F}
+.fat-session-sub{font-size:11px;color:#C0392B;margin-top:2px}
+.fat-session-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:16px}
+.fat-ex-list{border-top:0.5px solid #F5C6C0}
+.fat-ex-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:0.5px solid #f0ede6;cursor:pointer;-webkit-user-select:none;user-select:none}
+.fat-ex-row:last-child{border-bottom:none}
+.fat-ex-row:active{background:#FEF0EE}
+.fat-ex-check{width:26px;height:26px;border-radius:50%;border:2px solid #E8A89F;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.fat-ex-check.ticked{background:#C0392B;border-color:#C0392B}
+.fat-ex-check svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.fat-ex-check.ticked svg{opacity:1}
+.fat-ex-info{flex:1;min-width:0}
+.fat-ex-name{font-size:14px;font-weight:500;color:#2C2C2A}
+.fat-ex-muscle{font-size:11px;color:#B4B2A9;margin-top:1px}
+.fat-ex-reps{font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap}
+.fat-ex-row.done .fat-ex-name{color:#B4B2A9;text-decoration:line-through}
+.fat-tip-box{margin:0 12px 10px;border-radius:12px;padding:12px 14px;background:#FEF0EE;border:0.5px solid #F5C6C0;font-size:12px;color:#7B1F1F;line-height:1.6}
+.fat-tip-box strong{font-weight:600}
+.fat-overall{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.fat-ov-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:10px}
+.fat-ov-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.fat-ov-lbl{font-size:12px;color:#5F5E5A;flex:1}
+.fat-ov-bar{width:80px;height:6px;background:#e0ddd6;border-radius:3px;overflow:hidden}
+.fat-ov-fill{height:6px;border-radius:3px;background:#C0392B}
+.fat-ov-pct{font-size:12px;color:#C0392B;font-weight:600;min-width:32px;text-align:right}
+.fat-hiit-card{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.fat-hiit-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:10px}
+.fat-hiit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #f0ede6}
+.fat-hiit-row:last-child{border-bottom:none}
+.fat-hiit-num{width:22px;height:22px;border-radius:50%;background:#FEF0EE;color:#C0392B;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fat-hiit-name{flex:1;font-size:13px;color:#2C2C2A}
+.fat-hiit-dur{font-size:12px;font-weight:600;color:#C0392B}
+
+.perf-hero{background:linear-gradient(135deg,#2D1B69 0%,#534AB7 100%);padding:22px 16px;color:#fff}
+.perf-hero h2{font-size:22px;font-weight:700}
+.perf-hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
+.perf-week-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+.perf-week-strip::-webkit-scrollbar{display:none}
+.perf-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid #C5C2F0;color:#534AB7;cursor:pointer;background:#fff}
+.perf-pill.active{background:#534AB7;color:#fff;border-color:#534AB7}
+.perf-pill.complete{background:#EAF3DE;color:#3B6D11;border-color:#3B6D11}
+.kegel-card{margin:0 12px 0px;border-radius:14px;overflow:hidden;border:0.5px solid #e0ddd6;background:#fff}
+.kegel-hdr{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;background:#F3F1FC}
+.kegel-hdr-left{display:flex;align-items:center;gap:10px}
+.kegel-icon{width:36px;height:36px;border-radius:10px;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kegel-title{font-size:14px;font-weight:600;color:#2D1B69}
+.kegel-sub{font-size:11px;color:#534AB7;margin-top:2px}
+.kegel-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:16px}
+.kegel-body{padding:14px 16px;border-top:0.5px solid #EEEDFE}
+.kegel-sets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.kegel-set-btn{padding:8px 14px;border-radius:10px;border:1.5px solid #EEEDFE;background:#fff;font-size:12px;font-weight:600;color:#534AB7;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
+.kegel-set-btn.done{background:#EAF3DE;border-color:#3B6D11;color:#3B6D11}
+.ks-num{font-size:15px;font-weight:700}
+.ks-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
+.kegel-timer-row{display:flex;align-items:center;gap:10px;background:#F3F1FC;border-radius:10px;padding:10px 14px;margin-bottom:10px}
+.kegel-timer-num{font-size:28px;font-weight:800;color:#2D1B69;min-width:48px}
+.kegel-timer-lbl{font-size:11px;color:#534AB7;flex:1}
+.kt-btn{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#534AB7;color:#fff}
+.kt-btn.stop{background:#E24B4A}
+.kt-btn.done-state{background:#3B6D11}
+.kt-reset{background:#F3F1FC;color:#534AB7;margin-right:6px}
+.kegel-tip{font-size:12px;color:#5F5E5A;line-height:1.5;background:#FAEEDA;border-radius:8px;padding:8px 12px}
+.kegel-tip strong{color:#854F0B}
+.perf-info-card{margin:8px 12px 10px;border-radius:14px;padding:14px 16px;background:#F3F1FC;border:0.5px solid #EEEDFE}
+.perf-info-title{font-size:13px;font-weight:600;color:#2D1B69;margin-bottom:8px}
+.perf-info-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.perf-info-dot{width:8px;height:8px;border-radius:50%;background:#534AB7;flex-shrink:0;margin-top:4px}
+.perf-info-text{font-size:12px;color:#5F5E5A;line-height:1.5}
+.perf-overall{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.perf-ov-title{font-size:13px;font-weight:600;color:#2D1B69;margin-bottom:10px}
+.perf-ov-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.perf-ov-lbl{font-size:12px;color:#5F5E5A;flex:1}
+.perf-ov-bar{width:80px;height:6px;background:#e0ddd6;border-radius:3px;overflow:hidden}
+.perf-ov-fill{height:6px;border-radius:3px;background:#534AB7}
+.perf-ov-pct{font-size:12px;color:#534AB7;font-weight:600;min-width:32px;text-align:right}
+
+.fat-hero{background:linear-gradient(135deg,#7B1F1F 0%,#C0392B 100%);padding:22px 16px;color:#fff}
+.fat-hero h2{font-size:22px;font-weight:700}
+.fat-hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px}
+.fat-week-strip{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+.fat-week-strip::-webkit-scrollbar{display:none}
+.fat-pill{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:0.5px solid #E8A89F;color:#C0392B;cursor:pointer;background:#fff}
+.fat-pill.active{background:#C0392B;color:#fff;border-color:#C0392B}
+.fat-pill.complete{background:#EAF3DE;color:#3B6D11;border-color:#3B6D11}
+.fat-info{margin:8px 12px 10px;border-radius:14px;padding:14px 16px;background:#FEF0EE;border:0.5px solid #F5C6C0}
+.fat-info-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:8px}
+.fat-info-item{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start}
+.fat-info-dot{width:8px;height:8px;border-radius:50%;background:#C0392B;flex-shrink:0;margin-top:4px}
+.fat-info-text{font-size:12px;color:#5F5E5A;line-height:1.5}
+.fat-session-card{margin:0 12px 0px;border-radius:14px;overflow:hidden;border:0.5px solid #e0ddd6;background:#fff}
+.fat-session-hdr{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;background:#FEF0EE}
+.fat-session-hdr-left{display:flex;align-items:center;gap:10px}
+.fat-session-icon{width:36px;height:36px;border-radius:10px;background:#FAECE7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fat-session-title{font-size:14px;font-weight:600;color:#7B1F1F}
+.fat-session-sub{font-size:11px;color:#C0392B;margin-top:2px;text-transform:capitalize}
+.fat-session-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:16px}
+.fat-ex-list{border-top:0.5px solid #F5C6C0}
+.fat-ex-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:0.5px solid #f0ede6;cursor:pointer;-webkit-user-select:none;user-select:none}
+.fat-ex-row:last-child{border-bottom:none}
+.fat-ex-row:active{background:#FEF0EE}
+.fat-ex-check{width:26px;height:26px;border-radius:50%;border:2px solid #E8A89F;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.fat-ex-check.ticked{background:#C0392B;border-color:#C0392B}
+.fat-ex-check svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.fat-ex-check.ticked svg{opacity:1}
+.fat-ex-info{flex:1;min-width:0}
+.fat-ex-name{font-size:14px;font-weight:500;color:#2C2C2A}
+.fat-ex-muscle{font-size:11px;color:#B4B2A9;margin-top:1px}
+.fat-ex-reps{font-size:12px;font-weight:700;color:#C0392B;white-space:nowrap;text-align:right;min-width:90px}
+.fat-ex-row.done .fat-ex-name{color:#B4B2A9;text-decoration:line-through}
+.fat-tip-box{margin:0 12px 10px;border-radius:0 0 14px 14px;padding:10px 14px;background:#FEF0EE;border:0.5px solid #F5C6C0;border-top:none;font-size:12px;color:#7B1F1F;line-height:1.6}
+.fat-tip-box strong{font-weight:600}
+.fat-overall{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.fat-ov-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:10px}
+.fat-ov-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.fat-ov-lbl{font-size:12px;color:#5F5E5A;flex:1}
+.fat-ov-bar{width:80px;height:6px;background:#e0ddd6;border-radius:3px;overflow:hidden}
+.fat-ov-fill{height:6px;border-radius:3px;background:#C0392B}
+.fat-ov-pct{font-size:12px;color:#C0392B;font-weight:600;min-width:32px;text-align:right}
+.fat-diet-card{margin:0 12px 10px;border-radius:14px;padding:14px 16px;background:#fff;border:0.5px solid #e0ddd6}
+.fat-diet-title{font-size:13px;font-weight:600;color:#7B1F1F;margin-bottom:10px}
+.fat-diet-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:0.5px solid #f0ede6}
+.fat-diet-row:last-child{border-bottom:none}
+.fat-diet-num{width:22px;height:22px;border-radius:50%;background:#FEF0EE;color:#C0392B;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.fat-diet-text{font-size:13px;color:#2C2C2A;line-height:1.5}
+
+/* DASHBOARD */
+.dash-hero{background:linear-gradient(160deg,#042C53 0%,#185FA5 100%);padding:calc(env(safe-area-inset-top,0px)+20px) 16px 20px;color:#fff}
+.dash-hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.dash-greeting{font-size:20px;font-weight:700}
+.dash-date{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+.dash-avatar{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
+.dash-streak{display:flex;align-items:center;gap:6px;margin-top:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px}
+.dash-streak-icon{font-size:18px}
+.dash-streak-text{font-size:13px;color:rgba(255,255,255,.9);font-weight:500}
+.dash-streak-num{font-size:18px;font-weight:800;color:#FFC947;margin-left:4px}
+.bmi-card{margin:12px 12px 0;border-radius:16px;background:#fff;border:0.5px solid #e0ddd6;overflow:hidden}
+.bmi-card-hdr{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.bmi-card-title{font-size:14px;font-weight:600;color:#2C2C2A}
+.bmi-edit-btn{font-size:12px;color:#185FA5;font-weight:500;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:8px;background:#E6F1FB}
+.bmi-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:12px 0 0}
+.bmi-stat{padding:8px 16px;border-right:0.5px solid #f0ede6;text-align:center}
+.bmi-stat:last-child{border-right:none}
+.bmi-stat-val{font-size:20px;font-weight:800;color:#2C2C2A}
+.bmi-stat-lbl{font-size:10px;color:#B4B2A9;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.bmi-bar-wrap{padding:12px 16px 14px}
+.bmi-bar-track{height:10px;border-radius:5px;background:linear-gradient(to right,#3B82F6 0%,#22C55E 18.5%,#22C55E 25%,#F59E0B 30%,#EF4444 100%);position:relative;margin-bottom:6px}
+.bmi-bar-ptr{position:absolute;top:-4px;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #042C53;transform:translateX(-50%);transition:left .5s}
+.bmi-bar-labels{display:flex;justify-content:space-between;font-size:9px;color:#B4B2A9}
+.bmi-category{text-align:center;font-size:13px;font-weight:600;margin-top:4px}
+.bmi-input-form{padding:0 16px 14px;display:none}
+.bmi-input-form.show{display:block}
+.bmi-row{display:flex;gap:10px;margin-bottom:10px}
+.bmi-field{flex:1}
+.bmi-field label{font-size:11px;font-weight:600;color:#5F5E5A;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.bmi-field input{width:100%;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:10px;font-size:15px;font-weight:600;color:#2C2C2A;background:#f8f7f4;outline:none}
+.bmi-field input:focus{border-color:#185FA5;background:#fff}
+.bmi-field select{width:100%;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:10px;font-size:14px;color:#2C2C2A;background:#f8f7f4;outline:none;appearance:none}
+.bmi-save-btn{width:100%;padding:12px;background:#185FA5;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer}
+.dash-section-title{font-size:11px;font-weight:600;letter-spacing:.06em;color:#B4B2A9;padding:14px 16px 6px;text-transform:uppercase}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px}
+.dash-tile{border-radius:14px;padding:14px;border:0.5px solid #e0ddd6;background:#fff;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:transform .1s}
+.dash-tile:active{transform:scale(.97)}
+.dash-tile-icon{font-size:24px}
+.dash-tile-name{font-size:13px;font-weight:600;color:#2C2C2A}
+.dash-tile-sub{font-size:11px;color:#B4B2A9}
+.dash-tile-prog{height:3px;border-radius:2px;background:#e0ddd6;margin-top:6px;overflow:hidden}
+.dash-tile-fill{height:3px;border-radius:2px}
+.log-card{margin:10px 12px 0;border-radius:14px;background:#fff;border:0.5px solid #e0ddd6;overflow:hidden}
+.log-hdr{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid #f0ede6}
+.log-hdr-title{font-size:14px;font-weight:600;color:#2C2C2A}
+.log-add-btn{font-size:12px;font-weight:600;color:#185FA5;background:#E6F1FB;border:none;border-radius:8px;padding:4px 10px;cursor:pointer}
+.log-entry{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid #f8f7f4}
+.log-entry:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.log-entry-info{flex:1}
+.log-entry-title{font-size:13px;font-weight:500;color:#2C2C2A}
+.log-entry-date{font-size:11px;color:#B4B2A9;margin-top:1px}
+.log-entry-val{font-size:13px;font-weight:600;color:#185FA5}
+.check-in-card{margin:10px 12px 0;border-radius:14px;background:#fff;border:0.5px solid #e0ddd6;overflow:hidden}
+.check-in-hdr{padding:12px 16px;background:#042C53;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.check-in-title{font-size:14px;font-weight:600}
+.check-in-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:1px}
+.check-in-body{padding:14px 16px}
+.check-in-field{margin-bottom:12px}
+.check-in-field label{font-size:11px;font-weight:600;color:#5F5E5A;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.check-in-field input,.check-in-field textarea,.check-in-field select{width:100%;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:10px;font-size:14px;color:#2C2C2A;background:#f8f7f4;outline:none;font-family:inherit}
+.check-in-field textarea{height:70px;resize:none}
+.check-in-field input:focus,.check-in-field textarea:focus{border-color:#185FA5;background:#fff}
+.star-row{display:flex;gap:6px}
+.star-btn{font-size:24px;cursor:pointer;opacity:.3;transition:opacity .15s}
+.star-btn.on{opacity:1}
+.mood-row{display:flex;gap:8px}
+.mood-btn{flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #e0ddd6;background:#fff;font-size:18px;cursor:pointer;text-align:center}
+.mood-btn.sel{border-color:#185FA5;background:#E6F1FB}
+.ci-save-btn{width:100%;padding:12px;background:#042C53;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
+.ci-due-banner{padding:12px 14px;background:#FFF3CD;border-top:0.5px solid #FFE08A;display:flex;align-items:center;gap:10px;font-size:13px;color:#7B5800}
+.ci-due-banner strong{font-weight:600}
+.goals-card{margin:10px 12px 0;border-radius:14px;background:#fff;border:0.5px solid #e0ddd6;overflow:hidden}
+.goals-hdr{padding:12px 16px;border-bottom:0.5px solid #f0ede6;display:flex;align-items:center;justify-content:space-between}
+.goals-hdr-title{font-size:14px;font-weight:600;color:#2C2C2A}
+.goals-add-btn{font-size:12px;font-weight:600;color:#3B6D11;background:#EAF3DE;border:none;border-radius:8px;padding:4px 10px;cursor:pointer}
+.goal-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid #f8f7f4;cursor:pointer}
+.goal-row:last-child{border-bottom:none}
+.goal-ck{width:22px;height:22px;border-radius:50%;border:2px solid #B4B2A9;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.goal-ck.done{background:#3B6D11;border-color:#3B6D11;color:#fff}
+.goal-text{flex:1;font-size:13px;color:#2C2C2A}
+.goal-row.done-goal .goal-text{color:#B4B2A9;text-decoration:line-through}
+.coach-card{margin:10px 12px 10px;border-radius:14px;background:linear-gradient(135deg,#042C53,#185FA5);padding:14px 16px;color:#fff}
+.coach-title{font-size:13px;font-weight:600;margin-bottom:6px;opacity:.7;text-transform:uppercase;letter-spacing:.04em}
+.coach-msg{font-size:15px;font-weight:500;line-height:1.5}
+.coach-tip{font-size:12px;opacity:.65;margin-top:6px;line-height:1.4}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:flex-end}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding:20px 20px calc(env(safe-area-inset-bottom,0px)+20px);max-height:85vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:#5F5E5A;margin-bottom:16px}
+.modal-field{margin-bottom:12px}
+.modal-field label{font-size:11px;font-weight:600;color:#5F5E5A;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.modal-field input,.modal-field textarea,.modal-field select{width:100%;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:10px;font-size:15px;color:#2C2C2A;background:#f8f7f4;outline:none;font-family:inherit}
+.modal-field input:focus,.modal-field textarea:focus{border-color:#185FA5;background:#fff}
+.modal-btn{width:100%;padding:14px;background:#185FA5;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.modal-btn.secondary{background:#f8f7f4;color:#2C2C2A;margin-top:8px}
+.modal-close{float:right;background:none;border:none;font-size:22px;color:#B4B2A9;cursor:pointer;margin-top:-4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" onclick="closePanel()" aria-label="Back">&#8592;</button>
+    <div class="topbar-info">
+      <div class="topbar-title" id="topTitle">Njare</div>
+      <div class="topbar-sub" id="topSub">4-week beginner plan</div>
+    </div>
+  </div>
+  <div class="scroll" id="mainScroll">
+    <div class="panel-wrap" id="panelWrap">
+      <div id="mainContent">
+        
+        <div class="page active" id="page-dash">
+          <!-- Hero -->
+          <div class="dash-hero">
+            <div class="dash-hero-top">
+              <div>
+                <div class="dash-greeting" id="dashGreeting">Good morning</div>
+                <div class="dash-date" id="dashDate"></div>
+              </div>
+              <div class="dash-avatar" onclick="showProfileModal()">&#128100;</div>
+            </div>
+            <div class="dash-streak">
+              <span class="dash-streak-icon">&#128293;</span>
+              <span class="dash-streak-text">Day streak</span>
+              <span class="dash-streak-num" id="streakNum">0</span>
+              <span style="font-size:13px;color:rgba(255,255,255,.55);margin-left:4px">days</span>
+            </div>
+          </div>
+
+          <!-- BMI Card -->
+          <div class="bmi-card" id="bmiCard">
+            <div class="bmi-card-hdr">
+              <div class="bmi-card-title">&#9899; Body Stats</div>
+              <button class="bmi-edit-btn" onclick="toggleBmiForm()">Edit</button>
+            </div>
+            <div id="bmiDisplay">
+              <div class="bmi-stats">
+                <div class="bmi-stat"><div class="bmi-stat-val" id="bmiVal">--</div><div class="bmi-stat-lbl">BMI</div></div>
+                <div class="bmi-stat"><div class="bmi-stat-val" id="bmiWeight">--</div><div class="bmi-stat-lbl">kg</div></div>
+                <div class="bmi-stat"><div class="bmi-stat-val" id="bmiHeight">--</div><div class="bmi-stat-lbl">cm</div></div>
+              </div>
+              <div class="bmi-bar-wrap">
+                <div class="bmi-bar-track"><div class="bmi-bar-ptr" id="bmiPtr" style="left:50%"></div></div>
+                <div class="bmi-bar-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>
+                <div class="bmi-category" id="bmiCat" style="color:#22C55E">Enter your stats</div>
+                <div style="font-size:12px;color:#B4B2A9;text-align:center;margin-top:2px" id="bfDisplay"></div>
+              </div>
+            </div>
+            <div class="bmi-input-form" id="bmiForm">
+              <div class="bmi-row">
+                <div class="bmi-field"><label>Weight (kg)</label><input type="number" id="inWeight" placeholder="75" min="30" max="250"></div>
+                <div class="bmi-field"><label>Height (cm)</label><input type="number" id="inHeight" placeholder="175" min="100" max="250"></div>
+              </div>
+              <div class="bmi-row">
+                <div class="bmi-field"><label>Age</label><input type="number" id="inAge" placeholder="28" min="10" max="100"></div>
+                <div class="bmi-field"><label>Sex</label>
+                  <select id="inSex"><option value="male">Male</option><option value="female">Female</option></select>
+                </div>
+              </div>
+              <div class="bmi-row">
+                <div class="bmi-field"><label>Neck (cm)</label><input type="number" id="inNeck" placeholder="38"></div>
+                <div class="bmi-field"><label>Waist (cm)</label><input type="number" id="inWaist" placeholder="85"></div>
+              </div>
+              <div style="font-size:11px;color:#B4B2A9;margin-bottom:10px">Neck and waist measurements give a body fat % estimate.</div>
+              <button class="bmi-save-btn" onclick="saveBmi()">Calculate & Save</button>
+            </div>
+          </div>
+
+          <!-- Coach message -->
+          <div class="coach-card" id="coachCard">
+            <div class="coach-title">&#129302; Your coach says</div>
+            <div class="coach-msg" id="coachMsg">Set up your profile to get personalised tips.</div>
+            <div class="coach-tip" id="coachTip"></div>
+          </div>
+
+          <!-- Quick nav tiles -->
+          <div class="dash-section-title">Your programs</div>
+          <div class="dash-grid">
+            <div class="dash-tile" onclick="showTab('home')" style="border-top:3px solid #185FA5">
+              <div class="dash-tile-icon">&#127947;</div>
+              <div class="dash-tile-name">Military Training</div>
+              <div class="dash-tile-sub" id="tilemil">4-week plan</div>
+              <div class="dash-tile-prog"><div class="dash-tile-fill" id="tilemilfill" style="background:#185FA5;width:0%"></div></div>
+            </div>
+            <div class="dash-tile" onclick="showTab('fat')" style="border-top:3px solid #C0392B">
+              <div class="dash-tile-icon">&#128293;</div>
+              <div class="dash-tile-name">Burn & Sculpt</div>
+              <div class="dash-tile-sub" id="tilefat">Glute reduction</div>
+              <div class="dash-tile-prog"><div class="dash-tile-fill" id="tilefatfill" style="background:#C0392B;width:0%"></div></div>
+            </div>
+            <div class="dash-tile" onclick="showTab('perf')" style="border-top:3px solid #534AB7">
+              <div class="dash-tile-icon">&#10084;</div>
+              <div class="dash-tile-name">Performance</div>
+              <div class="dash-tile-sub" id="tileperf">Kegel program</div>
+              <div class="dash-tile-prog"><div class="dash-tile-fill" id="tileperfill" style="background:#534AB7;width:0%"></div></div>
+            </div>
+            <div class="dash-tile" onclick="showTab('cal')" style="border-top:3px solid #854F0B">
+              <div class="dash-tile-icon">&#128197;</div>
+              <div class="dash-tile-name">Calendar</div>
+              <div class="dash-tile-sub">28-day view</div>
+              <div class="dash-tile-prog"><div class="dash-tile-fill" style="background:#854F0B;width:0%"></div></div>
+            </div>
+          </div>
+
+          <!-- Goals -->
+          <div class="goals-card">
+            <div class="goals-hdr">
+              <div class="goals-hdr-title">&#127945; Daily Goals</div>
+              <button class="goals-add-btn" onclick="showGoalModal()">+ Add</button>
+            </div>
+            <div id="goalsList"></div>
+          </div>
+
+          <!-- Check-in card -->
+          <div class="check-in-card" id="checkInCard">
+            <div class="check-in-hdr">
+              <div>
+                <div class="check-in-title">&#128203; Check-in</div>
+                <div class="check-in-sub" id="checkInSub">Log your progress</div>
+              </div>
+              <div id="checkInDueBadge" style="font-size:11px;background:rgba(255,196,71,.2);color:#FFC947;padding:4px 10px;border-radius:20px;font-weight:600;display:none">Due now</div>
+            </div>
+            <div class="check-in-body">
+              <div class="check-in-field"><label>How is your energy today?</label>
+                <div class="mood-row" id="moodRow">
+                  <div class="mood-btn" onclick="selMood(0)">&#128128;</div>
+                  <div class="mood-btn" onclick="selMood(1)">&#128529;</div>
+                  <div class="mood-btn" onclick="selMood(2)">&#128512;</div>
+                  <div class="mood-btn" onclick="selMood(3)">&#128293;</div>
+                  <div class="mood-btn" onclick="selMood(4)">&#129351;</div>
+                </div>
+              </div>
+              <div class="check-in-field"><label>Sleep last night (hours)</label>
+                <input type="number" id="ciSleep" placeholder="7.5" min="1" max="12" step="0.5">
+              </div>
+              <div class="check-in-field"><label>Water today (litres)</label>
+                <input type="number" id="ciWater" placeholder="2.0" min="0" max="10" step="0.5">
+              </div>
+              <div class="check-in-field"><label>Current weight (kg)</label>
+                <input type="number" id="ciWeight" placeholder="75" min="30" max="250">
+              </div>
+              <div class="check-in-field"><label>Notes (optional)</label>
+                <textarea id="ciNotes" placeholder="How are you feeling? Any aches, wins, meals..."></textarea>
+              </div>
+              <button class="ci-save-btn" onclick="saveCheckIn()">Save check-in</button>
+            </div>
+          </div>
+
+          <!-- Log -->
+          <div class="log-card">
+            <div class="log-hdr">
+              <div class="log-hdr-title">&#128200; Progress log</div>
+            </div>
+            <div id="logList"></div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+        <div class="page" id="page-home">
+          <div id="todayBanner"></div>
+          <div class="week-strip" id="weekStrip"></div>
+          <div id="weekDays"></div>
+        </div>
+        <div class="page" id="page-cal">
+          <div class="cal-dow-row" id="calDow"></div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="page" id="page-prog">
+          <div class="prog-hero"><h2 id="ph2">Progress</h2><p id="psub"></p></div>
+          <div class="stat-grid" id="statGrid"></div>
+          <div class="bar-card" id="overallBar"></div>
+          <div class="bar-card" id="wkBars" style="margin-top:10px"></div>
+        </div>
+
+        <div class="page" id="page-perf">
+          <div class="perf-hero">
+            <h2>Performance Training</h2>
+            <p>Kegel &amp; pelvic floor program — 5 min daily</p>
+          </div>
+          <div class="perf-week-strip" id="perfWeekStrip"></div>
+          <div id="perfContent"></div>
+        </div>
+
+        <div class="page" id="page-fat">
+          <div class="fat-hero">
+            <h2>Burn &amp; Sculpt</h2>
+            <p>Reduce glute fat &amp; tone lower body — 4 weeks</p>
+          </div>
+          <div class="fat-week-strip" id="fatWeekStrip"></div>
+          <div id="fatContent"></div>
+        </div>
+
+        <div class="page" id="page-perf">
+          <div class="perf-hero"><h2>Performance</h2><p>Kegel &amp; pelvic floor program — 5 min daily</p></div>
+          <div class="perf-week-strip" id="perfWeekStrip"></div>
+          <div id="perfContent"></div>
+        </div>
+        <div class="page" id="page-fat">
+          <div class="fat-hero"><h2>Burn &amp; Sculpt</h2><p>Reduce glute fat &amp; tone lower body — 4 weeks</p></div>
+          <div class="fat-week-strip" id="fatWeekStrip"></div>
+          <div id="fatContent"></div>
+        </div>
+      </div>
+      <div class="ex-panel" id="exPanel">
+        <div class="ex-panel-hero" id="panelHero"></div>
+        <div class="anim-box" id="animBox"></div>
+        <div id="panelSets"></div>
+        <div id="panelTimer"></div>
+        <div id="panelHowto"></div>
+        <div class="mark-wrap"><button class="mark-btn mark-pending" id="markBtn" onclick="markDone()">Mark as done</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="cfwrap" id="cfwrap"></div>
+  <nav class="bottomnav">
+    <button class="bnav-btn active" id="bn-dash" onclick="showTab('dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Home
+    </button>
+    <button class="bnav-btn" id="bn-home" onclick="showTab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Today
+    </button>
+    <button class="bnav-btn" id="bn-cal" onclick="showTab('cal')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </button>
+    <button class="bnav-btn" id="bn-prog" onclick="showTab('prog')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </button>
+    <button class="bnav-btn" id="bn-perf" onclick="showTab('perf')">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Performance
+    </button>
+    <button class="bnav-btn" id="bn-fat" onclick="showTab('fat')">
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Burn
+    </button>
+    <button class="bnav-btn" id="bn-perf" onclick="showTab('perf')">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Perform
+    </button>
+    <button class="bnav-btn" id="bn-fat" onclick="showTab('fat')">
+      <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Burn
+    </button>
+  </nav>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal-overlay" id="profileModal" onclick="closeModal('profileModal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal('profileModal')">&#10005;</button>
+      <div class="modal-title">Your Profile</div>
+      <div class="modal-sub">Set your name and goal so Njare can coach you personally.</div>
+      <div class="modal-field"><label>Your name</label><input id="pName" placeholder="e.g. James"></div>
+      <div class="modal-field"><label>Primary goal</label>
+        <select id="pGoal">
+          <option value="lose_fat">Lose fat and tone up</option>
+          <option value="build_strength">Build strength and endurance</option>
+          <option value="performance">Improve sexual performance</option>
+          <option value="overall">Overall fitness and health</option>
+        </select>
+      </div>
+      <div class="modal-field"><label>Activity level</label>
+        <select id="pActivity">
+          <option value="sedentary">Sedentary (desk job, little exercise)</option>
+          <option value="light">Lightly active (1-3 days/week)</option>
+          <option value="moderate">Moderately active (3-5 days/week)</option>
+          <option value="active">Very active (daily training)</option>
+        </select>
+      </div>
+      <button class="modal-btn" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+
+  <!-- GOAL MODAL -->
+  <div class="modal-overlay" id="goalModal" onclick="closeModal('goalModal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal('goalModal')">&#10005;</button>
+      <div class="modal-title">Add a daily goal</div>
+      <div class="modal-sub">Small daily habits compound into big results.</div>
+      <div class="modal-field"><label>Goal</label><input id="gText" placeholder="e.g. Drink 3 litres of water"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px" id="goalPresets"></div>
+      <button class="modal-btn" onclick="addGoal()">Add Goal</button>
+    </div>
+  </div>
+</div>
+<script>
+var PLAN = [{"wk": "Week 1", "sub": "Foundation", "days": [{"d": "D1", "name": "Day 1", "type": "Upper body push", "color": "#185FA5", "bg": "#E6F1FB", "tc": "#0C447C", "exs": [{"n": "Push-ups (on knees ok)", "r": "2 sets x 8 reps", "m": "Chest \u00b7 triceps \u00b7 core", "sets": 2, "reps": 8}, {"n": "Chair dips", "r": "2 sets x 8 reps", "m": "Triceps \u00b7 chest", "sets": 2, "reps": 8}, {"n": "Plank hold", "r": "2 sets x 20 sec", "m": "Core \u00b7 shoulders", "sets": 2, "timer": 20}, {"n": "Shoulder taps", "r": "2 sets x 10 each", "m": "Core stability", "sets": 2, "reps": 10}]}, {"d": "D2", "name": "Day 2", "type": "Lower body + core", "color": "#854F0B", "bg": "#FAEEDA", "tc": "#633806", "exs": [{"n": "Bodyweight squats", "r": "2 sets x 15 reps", "m": "Quads \u00b7 glutes", "sets": 2, "reps": 15}, {"n": "Reverse lunges", "r": "2 sets x 8 each", "m": "Quads \u00b7 hip flexors", "sets": 2, "reps": 8}, {"n": "Sit-ups", "r": "2 sets x 15 reps", "m": "Abs \u00b7 hip flexors", "sets": 2, "reps": 15}, {"n": "Glute bridge", "r": "2 sets x 15 reps", "m": "Glutes \u00b7 hamstrings", "sets": 2, "reps": 15}]}, {"d": "D3", "name": "Day 3", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening stretch", "items": [["Full-body stretch", "10 min"], ["Hip flexor hold", "60 sec each"], ["Child pose", "60 sec"], ["Chest opener", "60 sec"]]}}, {"d": "D4", "name": "Day 4", "type": "Pull + cardio intro", "color": "#534AB7", "bg": "#EEEDFE", "tc": "#3C3489", "exs": [{"n": "Dead hangs", "r": "3 sets x 15 sec", "m": "Grip \u00b7 lats", "sets": 3, "timer": 15}, {"n": "Inverted rows", "r": "2 sets x 8 reps", "m": "Lats \u00b7 biceps", "sets": 2, "reps": 8}, {"n": "Mountain climbers", "r": "2 sets x 15 reps", "m": "Core \u00b7 cardio", "sets": 2, "reps": 15}, {"n": "Step-back burpees", "r": "2 sets x 6 reps", "m": "Full body", "sets": 2, "reps": 6}]}, {"d": "D5", "name": "Day 5", "type": "Full body circuit", "color": "#993C1D", "bg": "#FAECE7", "tc": "#712B13", "exs": [{"n": "Push-ups", "r": "2 sets x 10 reps", "m": "Chest \u00b7 triceps", "sets": 2, "reps": 10}, {"n": "Squats", "r": "2 sets x 20 reps", "m": "Quads \u00b7 glutes", "sets": 2, "reps": 20}, {"n": "Sit-ups", "r": "2 sets x 15 reps", "m": "Abs", "sets": 2, "reps": 15}, {"n": "Plank hold", "r": "2 sets x 20 sec", "m": "Core", "sets": 2, "timer": 20}, {"n": "1.5 km easy jog/walk", "r": "1 round", "m": "Cardio", "sets": 1}]}, {"d": "D6", "name": "Day 6", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening walk", "items": [["Easy outdoor walk", "20-25 min"], ["Relaxed pace", "no rush"]]}}, {"d": "D7", "name": "Day 7", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Mobility drills", "items": [["Hip circles", "10 each side"], ["Shoulder rolls", "20 reps"], ["Ankle circles", "10 each"], ["Thoracic rotations", "10 each"]]}}]}, {"wk": "Week 2", "sub": "Build", "days": [{"d": "D1", "name": "Day 1", "type": "Upper body push", "color": "#185FA5", "bg": "#E6F1FB", "tc": "#0C447C", "exs": [{"n": "Push-ups", "r": "3 sets x 10 reps", "m": "Chest \u00b7 triceps", "sets": 3, "reps": 10}, {"n": "Chair dips", "r": "2 sets x 10 reps", "m": "Triceps \u00b7 chest", "sets": 2, "reps": 10}, {"n": "Pike push-ups", "r": "2 sets x 8 reps", "m": "Shoulders \u00b7 triceps", "sets": 2, "reps": 8}, {"n": "Plank hold", "r": "3 sets x 25 sec", "m": "Core", "sets": 3, "timer": 25}]}, {"d": "D2", "name": "Day 2", "type": "Lower body + core", "color": "#854F0B", "bg": "#FAEEDA", "tc": "#633806", "exs": [{"n": "Squats", "r": "3 sets x 18 reps", "m": "Quads \u00b7 glutes", "sets": 3, "reps": 18}, {"n": "Walking lunges", "r": "2 sets x 10 each", "m": "Quads \u00b7 glutes", "sets": 2, "reps": 10}, {"n": "Sit-ups", "r": "3 sets x 18 reps", "m": "Abs", "sets": 3, "reps": 18}, {"n": "Glute bridge", "r": "3 sets x 15 reps", "m": "Glutes", "sets": 3, "reps": 15}, {"n": "Mountain climbers", "r": "2 sets x 15 reps", "m": "Core \u00b7 cardio", "sets": 2, "reps": 15}]}, {"d": "D3", "name": "Day 3", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening stretch", "items": [["Full-body stretch", "10 min"], ["Quad stretch", "45 sec each"], ["Hamstring stretch", "45 sec each"], ["Deep breathing", "5 min"]]}}, {"d": "D4", "name": "Day 4", "type": "Pull + cardio", "color": "#534AB7", "bg": "#EEEDFE", "tc": "#3C3489", "exs": [{"n": "Inverted rows", "r": "3 sets x 10 reps", "m": "Lats \u00b7 biceps", "sets": 3, "reps": 10}, {"n": "Dead hangs", "r": "3 sets x 20 sec", "m": "Grip \u00b7 lats", "sets": 3, "timer": 20}, {"n": "Step-back burpees", "r": "3 sets x 8 reps", "m": "Full body", "sets": 3, "reps": 8}, {"n": "2 km jog", "r": "1 round", "m": "Cardio", "sets": 1}]}, {"d": "D5", "name": "Day 5", "type": "Full body AMRAP 15 min", "color": "#993C1D", "bg": "#FAECE7", "tc": "#712B13", "exs": [{"n": "Push-ups", "r": "8 reps per round", "m": "Chest \u00b7 triceps", "sets": 0, "reps": 8}, {"n": "Squats", "r": "15 reps per round", "m": "Quads \u00b7 glutes", "sets": 0, "reps": 15}, {"n": "Sit-ups", "r": "12 reps per round", "m": "Abs", "sets": 0, "reps": 12}, {"n": "Burpees", "r": "5 reps per round", "m": "Full body", "sets": 0, "reps": 5}]}, {"d": "D6", "name": "Day 6", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening walk", "items": [["Brisk walk", "25 min"], ["Arm swings while walking", "natural"]]}}, {"d": "D7", "name": "Day 7", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Mobility drills", "items": [["Hip circles", "12 each side"], ["Cat-cow stretch", "10 reps"], ["Leg swings", "10 each"]]}}]}, {"wk": "Week 3", "sub": "Intensity", "days": [{"d": "D1", "name": "Day 1", "type": "Upper push (tempo)", "color": "#185FA5", "bg": "#E6F1FB", "tc": "#0C447C", "exs": [{"n": "Slow push-ups (3 sec down)", "r": "3 sets x 12 reps", "m": "Chest \u00b7 triceps", "sets": 3, "reps": 12}, {"n": "Diamond push-ups", "r": "2 sets x 10 reps", "m": "Triceps \u00b7 inner chest", "sets": 2, "reps": 10}, {"n": "Chair dips", "r": "3 sets x 12 reps", "m": "Triceps \u00b7 chest", "sets": 3, "reps": 12}, {"n": "Plank hold", "r": "3 sets x 35 sec", "m": "Core", "sets": 3, "timer": 35}]}, {"d": "D2", "name": "Day 2", "type": "Legs + core (tempo)", "color": "#854F0B", "bg": "#FAEEDA", "tc": "#633806", "exs": [{"n": "Slow squats (3 sec down)", "r": "3 sets x 20 reps", "m": "Quads \u00b7 glutes", "sets": 3, "reps": 20}, {"n": "Reverse lunges", "r": "3 sets x 12 each", "m": "Quads \u00b7 hip flexors", "sets": 3, "reps": 12}, {"n": "V-ups", "r": "3 sets x 10 reps", "m": "Abs \u00b7 hip flexors", "sets": 3, "reps": 10}, {"n": "Glute bridge (2 sec hold)", "r": "3 sets x 15 reps", "m": "Glutes", "sets": 3, "reps": 15}]}, {"d": "D3", "name": "Day 3", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening stretch", "items": [["Full-body stretch", "12 min"], ["Pigeon pose", "60 sec each"], ["Spinal twist", "45 sec each"]]}}, {"d": "D4", "name": "Day 4", "type": "Pull + sprint intervals", "color": "#534AB7", "bg": "#EEEDFE", "tc": "#3C3489", "exs": [{"n": "Inverted rows", "r": "4 sets x 10 reps", "m": "Lats \u00b7 biceps", "sets": 4, "reps": 10}, {"n": "Pull-up negatives (slow lower)", "r": "3 sets x 5 reps", "m": "Lats \u00b7 biceps", "sets": 3, "reps": 5}, {"n": "4 x 100 m sprints", "r": "30 sec rest between", "m": "Cardio \u00b7 legs", "sets": 4}, {"n": "Burpees", "r": "3 sets x 10 reps", "m": "Full body", "sets": 3, "reps": 10}]}, {"d": "D5", "name": "Day 5", "type": "Chipper (1 round for time)", "color": "#993C1D", "bg": "#FAECE7", "tc": "#712B13", "exs": [{"n": "60 x push-ups", "r": "break as needed", "m": "Chest \u00b7 triceps", "sets": 0}, {"n": "60 x sit-ups", "r": "break as needed", "m": "Abs", "sets": 0}, {"n": "60 x squats", "r": "break as needed", "m": "Quads \u00b7 glutes", "sets": 0}, {"n": "1.5 km run", "r": "finish strong", "m": "Cardio", "sets": 1}]}, {"d": "D6", "name": "Day 6", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening walk", "items": [["Easy walk", "25-30 min"], ["Focus on posture", "shoulders back"]]}}, {"d": "D7", "name": "Day 7", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Mobility drills", "items": [["Hip flexor lunge", "60 sec each"], ["Thoracic rotations", "15 each"], ["Wrist circles", "20 reps"]]}}]}, {"wk": "Week 4", "sub": "Peak and test", "days": [{"d": "D1", "name": "Day 1", "type": "Max-effort upper push", "color": "#185FA5", "bg": "#E6F1FB", "tc": "#0C447C", "exs": [{"n": "Max push-ups (to failure)", "r": "3 sets to failure", "m": "Chest \u00b7 triceps", "sets": 3}, {"n": "Chair dips", "r": "3 sets x 15 reps", "m": "Triceps", "sets": 3, "reps": 15}, {"n": "Pike push-ups", "r": "3 sets x 12 reps", "m": "Shoulders", "sets": 3, "reps": 12}, {"n": "Plank hold", "r": "3 sets x 45 sec", "m": "Core", "sets": 3, "timer": 45}]}, {"d": "D2", "name": "Day 2", "type": "Legs + core (high vol)", "color": "#854F0B", "bg": "#FAEEDA", "tc": "#633806", "exs": [{"n": "Squats", "r": "4 sets x 25 reps", "m": "Quads \u00b7 glutes", "sets": 4, "reps": 25}, {"n": "Lunges", "r": "3 sets x 15 each", "m": "Quads \u00b7 hip flexors", "sets": 3, "reps": 15}, {"n": "V-ups", "r": "3 sets x 15 reps", "m": "Abs", "sets": 3, "reps": 15}, {"n": "Mountain climbers", "r": "4 sets x 25 reps", "m": "Core \u00b7 cardio", "sets": 4, "reps": 25}, {"n": "Glute bridge", "r": "3 sets x 20 reps", "m": "Glutes", "sets": 3, "reps": 20}]}, {"d": "D3", "name": "Day 3", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Evening stretch", "items": [["Full-body stretch", "15 min"], ["Hip flexor hold", "75 sec each"], ["Deep breathing", "5 min"]]}}, {"d": "D4", "name": "Day 4", "type": "Pull + cardio peak", "color": "#534AB7", "bg": "#EEEDFE", "tc": "#3C3489", "exs": [{"n": "Inverted rows", "r": "4 sets x 12 reps", "m": "Lats \u00b7 biceps", "sets": 4, "reps": 12}, {"n": "Pull-up negatives (slow lower)", "r": "3 sets x 6 reps", "m": "Lats \u00b7 biceps", "sets": 3, "reps": 6}, {"n": "3 km run (timed PR)", "r": "1 timed effort", "m": "Cardio", "sets": 1}, {"n": "Burpees", "r": "2 sets x 12 reps", "m": "Full body", "sets": 2, "reps": 12}]}, {"d": "D5", "name": "Day 5", "type": "FINAL FITNESS TEST", "color": "#A32D2D", "bg": "#FCEBEB", "tc": "#791F1F", "exs": [{"n": "Max push-ups in 2 min", "r": "2 min timer", "m": "Chest \u00b7 triceps", "sets": 1, "timer": 120}, {"n": "Max sit-ups in 2 min", "r": "2 min timer", "m": "Abs", "sets": 1, "timer": 120}, {"n": "Max inverted rows", "r": "to failure", "m": "Lats \u00b7 biceps", "sets": 1}, {"n": "1.5 km run (timed)", "r": "record your time", "m": "Cardio", "sets": 1}]}, {"d": "D6", "name": "Day 6", "type": "REST \u2014 Celebrate!", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Reward walk", "items": [["Celebratory walk", "any distance"], ["Reflect on progress", "week 1 vs now"]]}}, {"d": "D7", "name": "Day 7", "type": "REST", "color": "#0F6E56", "bg": "#E1F5EE", "tc": "#085041", "rest": true, "eve": {"title": "Mobility drills", "items": [["Full mobility flow", "15 min"], ["All major joints", "circles and swings"]]}}]}];
+var EX_DB = {"Push-ups (on knees ok)": {"steps": ["Hands shoulder-width, on knees or full plank", "Lower chest toward floor, elbows at 45 degrees", "Press back up, fully extend arms", "Keep core tight \u2014 don't sag"], "tip": "On knees is perfectly fine \u2014 focus on range of motion.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Push-ups": {"steps": ["Hands shoulder-width, body straight head to heel", "Lower chest to 2 cm off floor, elbows at 45 degrees", "Drive through palms back up", "Squeeze glutes and core throughout"], "tip": "If form breaks, drop to knees \u2014 quality beats quantity.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Chair dips": {"steps": ["Grip edge of a sturdy chair, feet out in front", "Lower until elbows reach 90 degrees", "Press through palms back up", "Keep your back close to the chair"], "tip": "Feet further out = harder. Start with feet closer.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Plank hold": {"steps": ["Forearms on ground, elbows under shoulders", "Body straight from head to heels", "Squeeze glutes and brace abs hard", "Breathe steadily \u2014 don't hold your breath"], "tip": "Hips sagging? Stop and restart. Form over time.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Shoulder taps": {"steps": ["High plank, wrists under shoulders", "Tap left shoulder with right hand", "Return to plank, tap right shoulder with left", "Keep hips still \u2014 resist rotation"], "tip": "Slow and controlled beats fast every time.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Bodyweight squats": {"steps": ["Feet shoulder-width, toes slightly out", "Push hips back and down, chest tall", "Thighs parallel to floor at the bottom", "Drive through heels to stand"], "tip": "Arms out front helps with balance.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Squats": {"steps": ["Feet shoulder-width, toes slightly out", "Send hips back and down, chest proud", "Thighs parallel to floor if possible", "Explode up, squeeze glutes at top"], "tip": "Push knees outward \u2014 don't let them cave in.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Reverse lunges": {"steps": ["Stand tall, feet together", "Step one foot back, lower back knee toward floor", "Front knee stays above ankle", "Push off front foot to return to standing"], "tip": "Look ahead, not down \u2014 it helps balance.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Walking lunges": {"steps": ["Step forward with right foot into a lunge", "Lower back knee toward floor", "Push off and bring left foot forward", "Continue alternating down your space"], "tip": "Long steps so front knee stays behind toes.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Lunges": {"steps": ["Step forward with one foot", "Lower back knee toward floor", "Front knee behind toes, torso upright", "Push back to start, switch legs"], "tip": "Go slow on the way down to build control.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Sit-ups": {"steps": ["Lie on back, knees bent, feet flat", "Cross arms on chest or hands behind ears", "Curl upper body up toward knees", "Lower back down slowly"], "tip": "Exhale on the way up, inhale on the way down.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Glute bridge": {"steps": ["Lie on back, knees bent, feet hip-width", "Drive through heels to lift hips", "Squeeze glutes hard at the top", "Lower slowly back to floor"], "tip": "Feeling it in hamstrings? Move feet slightly further away.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Dead hangs": {"steps": ["Grab bar with both hands, overhand grip", "Let body hang fully, arms straight", "Shoulders engaged \u2014 don't fully relax them", "Breathe steadily and hold for target time"], "tip": "A doorframe pull-up bar works perfectly.", "type": "Pull", "tc": "#534AB7", "tb": "#EEEDFE"}, "Inverted rows": {"steps": ["Bar at waist height, lie underneath it", "Grip overhand, body straight like a reverse plank", "Pull chest up to bar, squeeze shoulder blades", "Lower slowly back down"], "tip": "More horizontal body = harder. Walk feet in to make easier.", "type": "Pull", "tc": "#534AB7", "tb": "#EEEDFE"}, "Mountain climbers": {"steps": ["High plank, wrists under shoulders", "Drive right knee toward chest", "Quickly switch \u2014 extend right as left knee comes in", "Alternate fast like horizontal running"], "tip": "Keep hips level \u2014 don't let them bounce up.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "Step-back burpees": {"steps": ["Step one foot back, then the other into a plank", "Do one push-up if you can", "Step feet back up toward hands", "Stand and reach arms overhead"], "tip": "Step-back is beginner-friendly \u2014 add the jump when ready.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "Burpees": {"steps": ["Stand, squat and place hands on floor", "Jump both feet back into plank", "Perform one push-up", "Jump feet back toward hands, then jump up"], "tip": "Pace yourself \u2014 burpees spike heart rate fast.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "Pike push-ups": {"steps": ["Start in downward dog \u2014 hips high, body in a V", "Bend elbows, lower top of head toward floor", "Push back up, straighten arms", "Keep hips high throughout"], "tip": "This trains your shoulders like an overhead press.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Diamond push-ups": {"steps": ["Hands together under chest, thumbs and forefingers form a diamond", "Lower chest toward hands, elbows pointing back", "Press back up", "Keep elbows close to body throughout"], "tip": "Extra tricep load. Go to knees if too hard.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "V-ups": {"steps": ["Lie flat, arms stretched overhead", "Simultaneously raise legs and upper body to form a V", "Touch hands toward feet at the top", "Lower back down under control"], "tip": "Bend knees if straight-leg V-ups are too difficult.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Pull-up negatives (slow lower)": {"steps": ["Jump so your chin is above the bar", "Grip overhand, just wider than shoulder-width", "Lower yourself as slowly as possible \u2014 aim for 5 seconds", "Drop off and repeat from the jump"], "tip": "Aim for 4-5 seconds down. Negatives build pulling strength fast.", "type": "Pull", "tc": "#534AB7", "tb": "#EEEDFE"}, "Slow push-ups (3 sec down)": {"steps": ["Standard push-up position", "Lower yourself over exactly 3 seconds \u2014 count out loud", "Pause briefly at the bottom", "Press back up at normal speed"], "tip": "The slow negative builds way more strength. Count properly.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Slow squats (3 sec down)": {"steps": ["Feet shoulder-width apart", "Lower over exactly 3 seconds \u2014 count it", "Pause at the bottom, then drive back up", "Weight through your heels"], "tip": "The slow descent is the hard part \u2014 don't rush it.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}, "Glute bridge (2 sec hold)": {"steps": ["Lie on back, knees bent, feet flat", "Drive hips up, squeeze glutes hard at the top", "Hold for a full 2 seconds \u2014 count it", "Lower slowly and repeat"], "tip": "Count the 2 seconds out loud \u2014 it keeps you honest.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "4 x 100 m sprints": {"steps": ["Mark out roughly 100 m", "Sprint at 80-90% effort", "Walk back to start \u2014 that is your rest", "Repeat 4 times total"], "tip": "80-90% effort gives the benefit without injury risk.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "Max push-ups (to failure)": {"steps": ["No time limit \u2014 go until you truly cannot do one more", "Use full range of motion only", "Note your number for each set", "Rest 2-3 minutes between max sets"], "tip": "This is your benchmark. Write the number down.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Max push-ups in 2 min": {"steps": ["Start a 2-minute timer", "Do as many push-ups as possible", "You may rest at top or bottom \u2014 clock keeps running", "Note your final number"], "tip": "Compare to your Week 1 number to see progress.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "Max sit-ups in 2 min": {"steps": ["Start a 2-minute timer", "As many sit-ups as possible in 2 minutes", "Rest briefly if needed \u2014 clock still runs", "Note your total"], "tip": "Pace yourself \u2014 starting too fast leads to a stall.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "Max inverted rows": {"steps": ["Set up your bar or table", "As many rows as possible without stopping", "Full extension at bottom, chest to bar at top", "Note your max number"], "tip": "This is your pulling strength benchmark for now.", "type": "Pull", "tc": "#534AB7", "tb": "#EEEDFE"}, "1.5 km easy jog/walk": {"steps": ["Warm up with a 2-minute walk", "Keep a relaxed pace \u2014 walk/jog mix is fine", "Focus on breathing throughout", "Cool down with a short walk"], "tip": "No pressure on pace. This is active recovery.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "2 km jog": {"steps": ["Find a 2 km route", "Keep a steady conversational pace", "Breathe in through nose, out through mouth", "Cool down with a short walk"], "tip": "You should be able to hold a short conversation.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "3 km run (timed PR)": {"steps": ["Warm up for 5 minutes first", "Start the timer and go at your best pace", "Try to go slightly faster in the second half", "Note your finish time"], "tip": "PR means personal record. Try to beat your previous time.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "1.5 km run": {"steps": ["Warm up with a 2-minute walk", "Run at a pace you can hold the whole distance", "Cool down with a 2-minute walk", "Aim for even pace throughout"], "tip": "Even pace beats fast start and slow finish.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "1.5 km run (timed)": {"steps": ["This is a timed effort \u2014 record your time", "Warm up before starting the clock", "Push harder than a normal run", "Note your time and compare to Week 1"], "tip": "10-12 minutes is a solid beginner target.", "type": "Cardio", "tc": "#993C1D", "tb": "#FAECE7"}, "60 x push-ups": {"steps": ["Break into as many sets as you need", "No time pressure \u2014 rest as needed", "Track how many sets it took", "Try to need fewer sets next time"], "tip": "Sets of 10-15 with 60-90 sec rest works well.", "type": "Push", "tc": "#185FA5", "tb": "#E6F1FB"}, "60 x sit-ups": {"steps": ["Break into sets \u2014 no time limit", "Keep form consistent throughout", "Rest as needed between sets", "Note how many sets it takes"], "tip": "Arms crossed on chest is easier on the neck.", "type": "Core", "tc": "#3B6D11", "tb": "#EAF3DE"}, "60 x squats": {"steps": ["Break into sets as needed", "Focus on depth \u2014 hit parallel if you can", "Rest briefly between sets", "Legs may feel heavy from earlier exercises"], "tip": "That burn from earlier is exactly the point.", "type": "Legs", "tc": "#854F0B", "tb": "#FAEEDA"}};
+var ANIMS = {"push": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"150\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Push-up \u2014 lower chest, press back up</text>\n<line x1=\"70\" y1=\"133\" x2=\"210\" y2=\"133\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:pu 1.6s ease-in-out infinite;transform-origin:140px 110px\">\n<circle cx=\"140\" cy=\"52\" r=\"14\" fill=\"none\" stroke=\"#185FA5\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"66\" x2=\"140\" y2=\"95\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"72\" x2=\"108\" y2=\"88\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"108\" y1=\"88\" x2=\"92\" y2=\"82\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"72\" x2=\"172\" y2=\"88\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"172\" y1=\"88\" x2=\"188\" y2=\"82\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"95\" x2=\"116\" y2=\"118\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"116\" y1=\"118\" x2=\"108\" y2=\"133\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"95\" x2=\"164\" y2=\"118\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"118\" x2=\"172\" y2=\"133\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "squat": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"150\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Squat \u2014 hips back and down</text>\n<line x1=\"96\" y1=\"130\" x2=\"184\" y2=\"130\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:sq 1.8s ease-in-out infinite;transform-origin:140px 85px\">\n<circle cx=\"140\" cy=\"38\" r=\"14\" fill=\"none\" stroke=\"#854F0B\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"52\" x2=\"140\" y2=\"82\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"60\" x2=\"112\" y2=\"74\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"112\" y1=\"74\" x2=\"98\" y2=\"68\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"60\" x2=\"168\" y2=\"74\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"168\" y1=\"74\" x2=\"182\" y2=\"68\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"128\" y1=\"82\" x2=\"116\" y2=\"108\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"116\" y1=\"108\" x2=\"108\" y2=\"130\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"152\" y1=\"82\" x2=\"164\" y2=\"108\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"108\" x2=\"172\" y2=\"130\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "plank": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"150\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Plank \u2014 straight line head to heel</text>\n<line x1=\"55\" y1=\"112\" x2=\"225\" y2=\"112\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:pl 2s ease-in-out infinite\">\n<circle cx=\"215\" cy=\"80\" r=\"13\" fill=\"none\" stroke=\"#3B6D11\" stroke-width=\"3\"/>\n<line x1=\"202\" y1=\"83\" x2=\"168\" y2=\"90\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"168\" y1=\"90\" x2=\"112\" y2=\"95\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"112\" y1=\"95\" x2=\"68\" y2=\"100\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"172\" y1=\"90\" x2=\"174\" y2=\"112\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"158\" y1=\"91\" x2=\"160\" y2=\"112\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"78\" y1=\"99\" x2=\"74\" y2=\"112\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"90\" y1=\"97\" x2=\"86\" y2=\"112\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"202\" y1=\"83\" x2=\"208\" y2=\"68\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n</g></svg>", "lunge": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"150\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Lunge \u2014 front knee over ankle</text>\n<line x1=\"60\" y1=\"133\" x2=\"220\" y2=\"133\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:lu 2s ease-in-out infinite;transform-origin:130px 100px\">\n<circle cx=\"130\" cy=\"42\" r=\"13\" fill=\"none\" stroke=\"#854F0B\" stroke-width=\"3\"/>\n<line x1=\"130\" y1=\"55\" x2=\"130\" y2=\"84\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"130\" y1=\"64\" x2=\"108\" y2=\"74\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"130\" y1=\"64\" x2=\"152\" y2=\"74\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"130\" y1=\"84\" x2=\"108\" y2=\"112\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"108\" y1=\"112\" x2=\"98\" y2=\"133\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"130\" y1=\"84\" x2=\"158\" y2=\"108\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"158\" y1=\"108\" x2=\"168\" y2=\"126\" stroke=\"#854F0B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<circle cx=\"168\" cy=\"129\" r=\"4\" fill=\"#854F0B\" opacity=\".3\"/>\n</g></svg>", "pull": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Pull / hang \u2014 engage your lats</text>\n<rect x=\"78\" y=\"20\" width=\"124\" height=\"7\" rx=\"3\" fill=\"#B4B2A9\"/>\n<g style=\"animation:pup 2s ease-in-out infinite;transform-origin:140px 60px\">\n<line x1=\"114\" y1=\"27\" x2=\"114\" y2=\"48\" stroke=\"#534AB7\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"166\" y1=\"27\" x2=\"166\" y2=\"48\" stroke=\"#534AB7\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<circle cx=\"140\" cy=\"62\" r=\"13\" fill=\"none\" stroke=\"#534AB7\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"75\" x2=\"140\" y2=\"104\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"84\" x2=\"116\" y2=\"96\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"84\" x2=\"164\" y2=\"96\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"104\" x2=\"128\" y2=\"130\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"128\" y1=\"130\" x2=\"122\" y2=\"145\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"104\" x2=\"152\" y2=\"130\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"152\" y1=\"130\" x2=\"158\" y2=\"145\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "sit": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Sit-up \u2014 curl up slowly, lower slowly</text>\n<line x1=\"58\" y1=\"130\" x2=\"222\" y2=\"130\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:su 2s ease-in-out infinite;transform-origin:150px 118px\">\n<circle cx=\"76\" cy=\"104\" r=\"13\" fill=\"none\" stroke=\"#3B6D11\" stroke-width=\"3\"/>\n<line x1=\"89\" y1=\"107\" x2=\"136\" y2=\"114\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"100\" y1=\"107\" x2=\"104\" y2=\"88\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"120\" y1=\"110\" x2=\"124\" y2=\"91\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"136\" y1=\"114\" x2=\"164\" y2=\"118\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"118\" x2=\"188\" y2=\"118\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"150\" y1=\"118\" x2=\"148\" y2=\"130\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"170\" y1=\"118\" x2=\"172\" y2=\"130\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "burpee": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Burpee \u2014 squat, plank, jump up</text>\n<line x1=\"58\" y1=\"132\" x2=\"222\" y2=\"132\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:bu 2.2s ease-in-out infinite;transform-origin:140px 95px\">\n<circle cx=\"140\" cy=\"42\" r=\"13\" fill=\"none\" stroke=\"#993C1D\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"55\" x2=\"140\" y2=\"84\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"64\" x2=\"114\" y2=\"76\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"114\" y1=\"76\" x2=\"102\" y2=\"70\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"64\" x2=\"166\" y2=\"76\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"166\" y1=\"76\" x2=\"178\" y2=\"70\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"128\" y1=\"84\" x2=\"116\" y2=\"112\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"116\" y1=\"112\" x2=\"108\" y2=\"132\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"152\" y1=\"84\" x2=\"164\" y2=\"112\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"112\" x2=\"172\" y2=\"132\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "mountain": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Mountain climber \u2014 drive knees alternating</text>\n<line x1=\"58\" y1=\"115\" x2=\"222\" y2=\"115\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:mc 0.7s ease-in-out infinite;transform-origin:140px 96px\">\n<circle cx=\"210\" cy=\"72\" r=\"12\" fill=\"none\" stroke=\"#993C1D\" stroke-width=\"3\"/>\n<line x1=\"198\" y1=\"75\" x2=\"164\" y2=\"84\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"84\" x2=\"104\" y2=\"91\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"178\" y1=\"84\" x2=\"176\" y2=\"115\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"150\" y1=\"89\" x2=\"148\" y2=\"115\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"104\" y1=\"91\" x2=\"68\" y2=\"101\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"68\" y1=\"101\" x2=\"66\" y2=\"115\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"130\" y1=\"89\" x2=\"120\" y2=\"70\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "run": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Running \u2014 steady pace, even breathing</text>\n<line x1=\"38\" y1=\"130\" x2=\"242\" y2=\"130\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:ru 0.9s ease-in-out infinite;transform-origin:140px 90px\">\n<circle cx=\"140\" cy=\"44\" r=\"13\" fill=\"none\" stroke=\"#993C1D\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"57\" x2=\"140\" y2=\"88\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"66\" x2=\"110\" y2=\"56\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"66\" x2=\"162\" y2=\"80\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"134\" y1=\"88\" x2=\"118\" y2=\"112\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"118\" y1=\"112\" x2=\"98\" y2=\"118\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"146\" y1=\"88\" x2=\"164\" y2=\"108\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"164\" y1=\"108\" x2=\"178\" y2=\"130\" stroke=\"#993C1D\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "bridge": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Glute bridge \u2014 squeeze at the top</text>\n<line x1=\"48\" y1=\"128\" x2=\"232\" y2=\"128\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:br 1.8s ease-in-out infinite;transform-origin:140px 105px\">\n<circle cx=\"72\" cy=\"92\" r=\"13\" fill=\"none\" stroke=\"#3B6D11\" stroke-width=\"3\"/>\n<line x1=\"85\" y1=\"92\" x2=\"132\" y2=\"88\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"104\" y1=\"94\" x2=\"108\" y2=\"114\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"132\" y1=\"88\" x2=\"162\" y2=\"100\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"162\" y1=\"100\" x2=\"178\" y2=\"128\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"148\" y1=\"100\" x2=\"158\" y2=\"128\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "vup": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">V-up \u2014 reach hands toward feet</text>\n<line x1=\"48\" y1=\"128\" x2=\"232\" y2=\"128\" stroke=\"#B4B2A9\" stroke-width=\"1.5\"/>\n<g style=\"animation:vu 2s ease-in-out infinite;transform-origin:140px 115px\">\n<circle cx=\"66\" cy=\"102\" r=\"13\" fill=\"none\" stroke=\"#3B6D11\" stroke-width=\"3\"/>\n<line x1=\"66\" y1=\"115\" x2=\"66\" y2=\"128\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"79\" y1=\"102\" x2=\"140\" y2=\"110\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"66\" y1=\"102\" x2=\"48\" y2=\"94\" stroke=\"#3B6D11\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"110\" x2=\"168\" y2=\"106\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"168\" y1=\"106\" x2=\"200\" y2=\"96\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"150\" y1=\"110\" x2=\"152\" y2=\"128\" stroke=\"#3B6D11\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "dip": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Dip \u2014 elbows back, lower to 90 deg</text>\n<rect x=\"88\" y=\"46\" width=\"16\" height=\"72\" rx=\"4\" fill=\"#e0ddd6\"/>\n<rect x=\"176\" y=\"46\" width=\"16\" height=\"72\" rx=\"4\" fill=\"#e0ddd6\"/>\n<rect x=\"80\" y=\"42\" width=\"32\" height=\"10\" rx=\"3\" fill=\"#B4B2A9\"/>\n<rect x=\"168\" y=\"42\" width=\"32\" height=\"10\" rx=\"3\" fill=\"#B4B2A9\"/>\n<g style=\"animation:dp 1.8s ease-in-out infinite;transform-origin:140px 90px\">\n<circle cx=\"140\" cy=\"56\" r=\"13\" fill=\"none\" stroke=\"#185FA5\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"69\" x2=\"140\" y2=\"96\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"76\" x2=\"106\" y2=\"66\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"106\" y1=\"66\" x2=\"97\" y2=\"80\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"76\" x2=\"174\" y2=\"66\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"174\" y1=\"66\" x2=\"183\" y2=\"80\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"96\" x2=\"128\" y2=\"124\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"96\" x2=\"152\" y2=\"124\" stroke=\"#185FA5\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>", "hang": "<svg viewBox=\"0 0 280 160\" width=\"260\" xmlns=\"http://www.w3.org/2000/svg\">\n<text x=\"140\" y=\"153\" text-anchor=\"middle\" font-size=\"10\" fill=\"#B4B2A9\" font-family=\"sans-serif\">Dead hang \u2014 shoulders engaged, breathe</text>\n<rect x=\"68\" y=\"16\" width=\"144\" height=\"8\" rx=\"4\" fill=\"#B4B2A9\"/>\n<g style=\"animation:hg 2s ease-in-out infinite;transform-origin:140px 50px\">\n<line x1=\"114\" y1=\"24\" x2=\"114\" y2=\"46\" stroke=\"#534AB7\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<line x1=\"166\" y1=\"24\" x2=\"166\" y2=\"46\" stroke=\"#534AB7\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<circle cx=\"140\" cy=\"60\" r=\"13\" fill=\"none\" stroke=\"#534AB7\" stroke-width=\"3\"/>\n<line x1=\"140\" y1=\"73\" x2=\"140\" y2=\"102\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"82\" x2=\"114\" y2=\"94\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"82\" x2=\"166\" y2=\"94\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"102\" x2=\"126\" y2=\"130\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"126\" y1=\"130\" x2=\"120\" y2=\"145\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"140\" y1=\"102\" x2=\"154\" y2=\"130\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<line x1=\"154\" y1=\"130\" x2=\"160\" y2=\"145\" stroke=\"#534AB7\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g></svg>"};
+var PLAN_START = new Date(2026,5,23);
+var CIRC = 2*Math.PI*65;
+
+var ST = {};
+try { ST = JSON.parse(localStorage.getItem('mc-v4') || '{}'); } catch(e) {}
+function save() { try { localStorage.setItem('mc-v4', JSON.stringify(ST)); } catch(e) {} }
+
+function ek(wi,di,ei) { return 'w'+wi+'d'+di+'e'+ei; }
+function sk(wi,di,ei,si) { return 'w'+wi+'d'+di+'e'+ei+'s'+si; }
+function rk(wi,di) { return 'w'+wi+'d'+di+'r'; }
+
+function isDone(wi,di) {
+  var day = PLAN[wi].days[di];
+  if (day.rest) return !!ST[rk(wi,di)];
+  var exs = day.exs || [];
+  return exs.length > 0 && exs.every(function(_,ei) { return ST[ek(wi,di,ei)]; });
+}
+function cnt(wi,di) {
+  var exs = PLAN[wi].days[di].exs || [];
+  var done = exs.filter(function(_,ei) { return ST[ek(wi,di,ei)]; }).length;
+  return { done: done, total: exs.length };
+}
+
+var curTab = 'home', curWk = 0, pCtx = null;
+var tSecs = 0, tTotal = 0, tRun = false, tIv = null;
+
+function getTWD() {
+  var n = new Date(); n.setHours(0,0,0,0);
+  var s = new Date(PLAN_START); s.setHours(0,0,0,0);
+  var d = Math.floor((n-s)/86400000);
+  if (d < 0 || d >= 28) return null;
+  return { wi: Math.floor(d/7), di: d%7 };
+}
+
+function showTab(t) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.bnav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('page-'+t).classList.add('active');
+  document.getElementById('bn-'+t).classList.add('active');
+  curTab = t; closePanel();
+  var titles = {dash:'Njare',home:'Military Training',cal:'Calendar',prog:'Progress',perf:'Performance',fat:'Burn & Sculpt'};
+  var subs2perf = '5-min daily Kegel program'; var subs = {dash:'Your personal coach',home:'4-week beginner · 15 min mornings',cal:'28-day overview',prog:'Your stats'};
+  document.getElementById('topTitle').textContent = titles[t];
+  document.getElementById('topSub').textContent = subs[t];
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (t==='dash') renderDash();
+  if (t==='home') renderHome();
+  if (t==='cal') renderCal();
+  if (t==='prog') renderProg();
+  if (t==='perf') renderPerfTab();
+  if (t==='fat') renderFatTab();
+  if (t==='perf') renderPerfTab();
+  if (t==='fat') renderFatTab();
+}
+
+function renderHome() { renderBanner(); renderStrip(); renderDays(); }
+
+function renderBanner() {
+  var wd = getTWD();
+  var el = document.getElementById('todayBanner');
+  if (!wd) { el.innerHTML = ''; return; }
+  var wi = wd.wi, di = wd.di;
+  var day = PLAN[wi].days[di];
+  var done = isDone(wi,di);
+  var c = cnt(wi,di);
+  var col = done ? '#0F6E56' : day.color;
+  var label = done ? 'Today complete!' : "Today's session";
+  var sub = day.type + (c.total ? ' — ' + c.done + '/' + c.total + ' done' : '');
+  var btn = done ? 'Review' : 'Start';
+  el.innerHTML = '<div class="today-banner" style="background:' + col + '"><div><h3>' + label + '</h3><p>' + sub + '</p></div><button class="go-btn" onclick="jumpToday()">' + btn + '</button></div>';
+}
+
+function jumpToday() {
+  var wd = getTWD(); if (!wd) return;
+  curWk = wd.wi; renderStrip(); renderDays();
+  setTimeout(function() {
+    var e = document.querySelector('.day-card[data-di="' + wd.di + '"]');
+    if (e) e.scrollIntoView({behavior:'smooth',block:'center'});
+  }, 100);
+}
+
+function renderStrip() {
+  var el = document.getElementById('weekStrip'); el.innerHTML = '';
+  PLAN.forEach(function(W,wi) {
+    var tr = W.days.filter(function(d) { return !d.rest; });
+    var allDone = tr.every(function(d,i) { return isDone(wi, W.days.indexOf(d)); });
+    var p = document.createElement('button');
+    p.className = 'wk-pill' + (wi===curWk?' active':'') + (allDone?' complete':'');
+    p.textContent = W.wk + (allDone ? ' ✓' : '');
+    p.onclick = (function(w) { return function() { curWk=w; renderStrip(); renderDays(); }; })(wi);
+    el.appendChild(p);
+  });
+}
+
+function renderDays() {
+  var wrap = document.getElementById('weekDays');
+  var W = PLAN[curWk]; var wd = getTWD();
+  wrap.innerHTML = '<div class="sec-label">' + W.wk + ' — ' + W.sub + '</div>';
+  W.days.forEach(function(day, di) {
+    var wi = curWk;
+    var isToday = wd && wd.wi===wi && wd.di===di;
+    var done = isDone(wi,di);
+    var c = cnt(wi,di);
+    var card = document.createElement('div');
+    card.className = 'day-card'; card.dataset.di = di;
+    if (isToday) card.style.border = '1.5px solid ' + day.color;
+
+    if (day.rest) {
+      var eve = day.eve;
+      var eveHtml = '';
+      if (eve) {
+        var items = eve.items.map(function(it) {
+          return '<div class="eve-item"><span class="eve-item-name">' + it[0] + '</span><span class="eve-item-dur">' + it[1] + '</span></div>';
+        }).join('');
+        eveHtml = '<div class="eve-block"><div class="eve-title">' + eve.title + ' <span style="font-size:10px;color:#1D9E75;font-weight:400">optional</span></div>' + items + '</div>';
+      }
+      var rdone = isDone(wi,di);
+      card.innerHTML = '<div class="rest-hdr" style="background:' + day.bg + '" onclick="toggleRest(' + wi + ',' + di + ')">'
+        + '<div style="display:flex;align-items:center"><div class="day-dot" style="background:' + day.color + '"></div>'
+        + '<div><div class="day-name" style="color:' + day.tc + '">' + day.name + '</div>'
+        + '<div class="day-type" style="color:' + day.color + '">' + day.type + '</div></div></div>'
+        + '<div class="rest-badge" style="background:' + (rdone?'#3B6D11':'#0F6E56') + '">' + (rdone?'✓ Done':'Rest day') + '</div>'
+        + '</div>' + eveHtml;
+    } else {
+      var exs = day.exs || [];
+      var rows = exs.map(function(ex,ei) {
+        var ticked = !!ST[ek(wi,di,ei)];
+        var checkCls = 'ex-check' + (ticked ? ' ticked' : '');
+        var rowCls = 'ex-row' + (ticked ? ' done' : '');
+        return '<div class="' + rowCls + '" onclick="openPanel(' + wi + ',' + di + ',' + ei + ')">'
+          + '<div class="' + checkCls + '"><svg viewBox="0 0 14 14"><polyline points="2 7 6 11 12 3"/></svg></div>'
+          + '<div class="ex-info"><div class="ex-name">' + ex.n + '</div><div class="ex-meta">' + ex.m + '</div></div>'
+          + '<div class="ex-right"><div class="ex-reps">' + ex.r + '</div><div class="ex-chevron">&rsaquo;</div></div>'
+          + '</div>';
+      }).join('');
+      var todayTag = isToday ? '<span class="today-tag" style="background:' + day.color + '">Today</span>' : '';
+      var progHtml = done ? '<span style="color:#3B6D11;font-weight:600">✓ Done</span>' : (c.done + '/' + c.total);
+      card.innerHTML = '<div class="day-hdr" style="background:' + day.bg + '">'
+        + '<div style="display:flex;align-items:center;flex:1;min-width:0"><div class="day-dot" style="background:' + day.color + '"></div>'
+        + '<div style="min-width:0"><div class="day-name" style="color:' + day.tc + '">' + day.name + todayTag + '</div>'
+        + '<div class="day-type" style="color:' + day.color + '">' + day.type + '</div></div></div>'
+        + '<div class="day-progress">' + progHtml + '</div></div>'
+        + '<div class="day-exlist">' + rows + '</div>';
+    }
+    wrap.appendChild(card);
+  });
+}
+
+function getAnim(name) {
+  var n = name.toLowerCase();
+  if (n.indexOf('push') >= 0 || n.indexOf('diamond') >= 0 || n.indexOf('pike') >= 0) return ANIMS.push;
+  if (n.indexOf('squat') >= 0) return ANIMS.squat;
+  if (n.indexOf('plank') >= 0) return ANIMS.plank;
+  if (n.indexOf('lunge') >= 0) return ANIMS.lunge;
+  if (n.indexOf('pull') >= 0 || n.indexOf('row') >= 0 || n.indexOf('negative') >= 0) return ANIMS.pull;
+  if (n.indexOf('sit') >= 0 || n.indexOf('crunch') >= 0) return ANIMS.sit;
+  if (n.indexOf('burpee') >= 0) return ANIMS.burpee;
+  if (n.indexOf('mountain') >= 0) return ANIMS.mountain;
+  if (n.indexOf('run') >= 0 || n.indexOf('jog') >= 0 || n.indexOf('sprint') >= 0 || n.indexOf('km') >= 0) return ANIMS.run;
+  if (n.indexOf('bridge') >= 0) return ANIMS.bridge;
+  if (n.indexOf('v-up') >= 0 || n.indexOf('vup') >= 0) return ANIMS.vup;
+  if (n.indexOf('dip') >= 0) return ANIMS.dip;
+  if (n.indexOf('hang') >= 0) return ANIMS.hang;
+  return ANIMS.push;
+}
+
+function openPanel(wi,di,ei) {
+  stopTimer(); pCtx = {wi:wi,di:di,ei:ei};
+  var day = PLAN[wi].days[di];
+  var ex = day.exs[ei];
+  var db = EX_DB[ex.n] || {steps:["Focus on good form","Control the movement","Breathe steadily","Rest between sets"],tip:"Quality beats quantity every time.",type:"General",tc:"#5F5E5A",tb:"#F1EFE8"};
+  var ticked = !!ST[ek(wi,di,ei)];
+
+  document.getElementById('panelHero').innerHTML =
+    '<div class="ex-panel-name">' + ex.n + '</div>'
+    + '<div class="ex-panel-muscle">' + ex.m + '</div>'
+    + '<div class="ex-panel-badge" style="background:' + db.tb + ';color:' + db.tc + '">' + db.type + '</div>';
+
+  document.getElementById('animBox').innerHTML = getAnim(ex.n);
+
+  // Sets
+  var ns = ex.sets || 0;
+  var setsHtml = '';
+  if (ns > 0) {
+    var label = ex.timer ? ex.timer + 's' : (ex.reps ? ex.reps + ' reps' : 'Go');
+    var btns = '';
+    for (var si = 0; si < ns; si++) {
+      var sd = !!ST[sk(wi,di,ei,si)];
+      btns += '<div class="set-btn' + (sd?' done':'') + '" onclick="toggleSet(' + wi + ',' + di + ',' + ei + ',' + si + ')">'
+        + (sd ? '<div class="set-ck"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+               : '<div class="set-num">' + (si+1) + '</div>')
+        + '<div class="set-lbl">' + (sd ? 'done' : label) + '</div></div>';
+    }
+    setsHtml = '<div class="sets-section"><div class="sets-head"><span>' + ns + ' set' + (ns>1?'s':'') + '</span><span>' + ex.r + '</span></div><div class="sets-grid" id="setsGrid">' + btns + '</div></div>';
+  }
+  document.getElementById('panelSets').innerHTML = setsHtml;
+
+  // Timer
+  var timerHtml = '';
+  if (ex.timer) {
+    tSecs = ex.timer; tTotal = ex.timer;
+    timerHtml = '<div class="timer-section"><div class="timer-head">Countdown — ' + ex.timer + ' seconds</div>'
+      + '<div class="timer-wrap"><div class="timer-ring">'
+      + '<svg viewBox="0 0 140 140" width="140" height="140"><circle class="ring-bg" cx="70" cy="70" r="65"/><circle class="ring-fg" id="rFg" cx="70" cy="70" r="65" stroke-dasharray="' + CIRC + '" stroke-dashoffset="0"/></svg>'
+      + '<div class="ring-num" id="rNum">' + ex.timer + '</div><div class="ring-unit">sec</div></div>'
+      + '<div class="t-btns"><button class="t-btn t-reset" onclick="resetTimer(' + ex.timer + ')">Reset</button>'
+      + '<button class="t-btn t-start" id="tBtn" onclick="toggleTimer(' + ex.timer + ')">Start</button></div>'
+      + '</div></div>';
+  }
+  document.getElementById('panelTimer').innerHTML = timerHtml;
+
+  // How-to
+  var steps = db.steps.map(function(s,i) {
+    return '<div class="howto-step"><div class="step-num">' + (i+1) + '</div><div class="step-text">' + s + '</div></div>';
+  }).join('');
+  document.getElementById('panelHowto').innerHTML =
+    '<div class="howto-section"><div class="howto-head">How to do it</div>' + steps
+    + '<div class="tip-box"><strong>Tip:</strong> ' + db.tip + '</div></div>';
+
+  var btn = document.getElementById('markBtn');
+  btn.className = 'mark-btn ' + (ticked ? 'mark-complete' : 'mark-pending');
+  btn.textContent = ticked ? '✓ Completed — tap to undo' : 'Mark as done';
+
+  document.getElementById('exPanel').classList.add('open');
+  document.getElementById('backBtn').classList.add('show');
+  document.getElementById('topTitle').textContent = ex.n;
+  document.getElementById('topSub').textContent = day.name + ' — ' + day.type;
+  document.getElementById('mainScroll').scrollTop = 0;
+}
+
+function closePanel() {
+  stopTimer();
+  document.getElementById('exPanel').classList.remove('open');
+  document.getElementById('backBtn').classList.remove('show');
+  var titles = {dash:'Njare',home:'Military Training',cal:'Calendar',prog:'Progress',perf:'Performance',fat:'Burn & Sculpt'};
+  var subs2perf = '5-min daily Kegel program'; var subs = {dash:'Your personal coach',home:'4-week beginner · 15 min mornings',cal:'28-day overview',prog:'Your stats'};
+  document.getElementById('topTitle').textContent = titles[curTab];
+  document.getElementById('topSub').textContent = subs[curTab];
+  if (pCtx) renderDays();
+  pCtx = null;
+}
+
+function toggleSet(wi,di,ei,si) {
+  var k = sk(wi,di,ei,si); ST[k] = !ST[k];
+  var ex = PLAN[wi].days[di].exs[ei]; var ns = ex.sets || 0;
+  var allSets = ns > 0 && (function() {
+    for (var i=0;i<ns;i++) { if (!ST[sk(wi,di,ei,i)]) return false; } return true;
+  })();
+  if (allSets && !ST[ek(wi,di,ei)]) {
+    ST[ek(wi,di,ei)] = true;
+    var btn = document.getElementById('markBtn');
+    if (btn) { btn.className = 'mark-btn mark-complete'; btn.textContent = '✓ Completed — tap to undo'; }
+    if (isDone(wi,di)) confetti();
+  }
+  save();
+  var g = document.getElementById('setsGrid'); if (!g) return;
+  var label = ex.timer ? ex.timer + 's' : (ex.reps ? ex.reps + ' reps' : 'Go');
+  var btns = g.querySelectorAll('.set-btn');
+  btns.forEach(function(b,i) {
+    var d = !!ST[sk(wi,di,ei,i)]; b.className = 'set-btn' + (d?' done':'');
+    b.innerHTML = d
+      ? '<div class="set-ck"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="set-lbl">done</div>'
+      : '<div class="set-num">' + (i+1) + '</div><div class="set-lbl">' + label + '</div>';
+  });
+  renderDays(); renderBanner();
+}
+
+function markDone() {
+  if (!pCtx) return;
+  var wi=pCtx.wi, di=pCtx.di, ei=pCtx.ei;
+  var k = ek(wi,di,ei); ST[k] = !ST[k];
+  var btn = document.getElementById('markBtn');
+  btn.className = 'mark-btn ' + (ST[k] ? 'mark-complete' : 'mark-pending');
+  btn.textContent = ST[k] ? '✓ Completed — tap to undo' : 'Mark as done';
+  if (ST[k] && isDone(wi,di)) confetti();
+  save(); renderDays(); renderBanner();
+}
+
+function toggleRest(wi,di) { ST[rk(wi,di)] = !ST[rk(wi,di)]; save(); renderDays(); }
+
+function toggleTimer(total) {
+  if (!tRun) {
+    if (tSecs <= 0) { tSecs = total; tTotal = total; }
+    tRun = true;
+    var btn = document.getElementById('tBtn');
+    if (btn) { btn.className = 't-btn t-stop'; btn.textContent = 'Pause'; }
+    tIv = setInterval(function() {
+      tSecs--;
+      var n = document.getElementById('rNum'); var f = document.getElementById('rFg');
+      if (n) n.textContent = tSecs;
+      if (f) f.style.strokeDashoffset = CIRC * (1 - tSecs/tTotal);
+      if (tSecs <= 0) {
+        stopTimer();
+        var b = document.getElementById('tBtn');
+        if (b) { b.className = 't-btn t-done'; b.textContent = 'Done!'; }
+      }
+    }, 1000);
+  } else {
+    stopTimer();
+    var btn = document.getElementById('tBtn');
+    if (btn) { btn.className = 't-btn t-start'; btn.textContent = 'Resume'; }
+  }
+}
+
+function stopTimer() { clearInterval(tIv); tRun = false; }
+
+function resetTimer(total) {
+  stopTimer(); tSecs = total; tTotal = total;
+  var n = document.getElementById('rNum'); var f = document.getElementById('rFg');
+  if (n) n.textContent = total;
+  if (f) f.style.strokeDashoffset = 0;
+  var b = document.getElementById('tBtn');
+  if (b) { b.className = 't-btn t-start'; b.textContent = 'Start'; }
+}
+
+function renderCal() {
+  document.getElementById('calDow').innerHTML = ['S','M','T','W','T','F','S'].map(function(d) {
+    return '<div class="cal-dow">' + d + '</div>';
+  }).join('');
+  var grid = document.getElementById('calGrid'); grid.innerHTML = '';
+  var start = new Date(PLAN_START); var today = new Date(); today.setHours(0,0,0,0);
+  for (var i = 0; i < start.getDay(); i++) {
+    var e = document.createElement('div'); e.className = 'cal-cell empty'; grid.appendChild(e);
+  }
+  for (var day = 0; day < 28; day++) {
+    var wi = Math.floor(day/7), di = day%7;
+    var d = PLAN[wi].days[di];
+    var date = new Date(PLAN_START); date.setDate(date.getDate() + day);
+    var isToday = date.getTime() === today.getTime();
+    var isPast = date < today; var done = isDone(wi,di);
+    var cls = 'cal-cell';
+    if (done) cls += ' done'; else if (d.rest) cls += ' rest'; else cls += ' train';
+    if (isToday) cls += ' today'; if (isPast && !done) cls += ' faded';
+    var el = document.createElement('div'); el.className = cls;
+    el.innerHTML = '<span class="cn">' + date.getDate() + '</span><span class="cd"></span>';
+    el.onclick = (function(w,di2) { return function() {
+      curWk = w; showTab('home');
+      setTimeout(function() {
+        var c = document.querySelector('.day-card[data-di="' + di2 + '"]');
+        if (c) c.scrollIntoView({behavior:'smooth',block:'center'});
+      }, 200);
+    }; })(wi, di);
+    grid.appendChild(el);
+  }
+}
+
+function renderProg() {
+  var totalEx = 0, doneEx = 0, trainDays = 0, doneTrain = 0;
+  PLAN.forEach(function(W,wi) {
+    W.days.forEach(function(d,di) {
+      if (!d.rest) {
+        trainDays++;
+        if (isDone(wi,di)) doneTrain++;
+        var exs = d.exs || [];
+        totalEx += exs.length;
+        exs.forEach(function(_,ei) { if (ST[ek(wi,di,ei)]) doneEx++; });
+      }
+    });
+  });
+  var pct = Math.round(doneEx / Math.max(totalEx,1) * 100);
+  document.getElementById('ph2').textContent = doneTrain===0 ? 'Getting started' : doneTrain>=trainDays ? 'Plan complete!' : 'Keep going!';
+  document.getElementById('psub').textContent = doneTrain + ' of ' + trainDays + ' training days done';
+  document.getElementById('statGrid').innerHTML =
+    '<div class="stat-card"><div class="stat-val">' + doneTrain + '</div><div class="stat-lbl">Days trained</div></div>'
+    + '<div class="stat-card"><div class="stat-val">' + (trainDays-doneTrain) + '</div><div class="stat-lbl">Days left</div></div>'
+    + '<div class="stat-card"><div class="stat-val">' + doneEx + '</div><div class="stat-lbl">Exercises done</div></div>'
+    + '<div class="stat-card"><div class="stat-val">' + pct + '%</div><div class="stat-lbl">Completion</div></div>';
+  document.getElementById('overallBar').innerHTML =
+    '<div class="bar-lbl-row"><span>Overall progress</span><span>' + pct + '%</span></div>'
+    + '<div class="bar-bg"><div class="bar-fill" style="width:' + pct + '%"></div></div>';
+  var wkHtml = '<div style="font-size:13px;font-weight:600;margin-bottom:10px">By week</div>';
+  PLAN.forEach(function(W,wi) {
+    var wx = 0, wd2 = 0;
+    W.days.forEach(function(d,di) {
+      var exs = d.exs || []; wx += exs.length;
+      exs.forEach(function(_,ei) { if (ST[ek(wi,di,ei)]) wd2++; });
+    });
+    var p = Math.round(wd2/Math.max(wx,1)*100);
+    wkHtml += '<div class="wk-row"><div class="wk-dot" style="background:' + (p>=100?'#3B6D11':'#378ADD') + '"></div>'
+      + '<div class="wk-name">' + W.wk + '</div>'
+      + '<div class="wk-track"><div class="wk-fill" style="width:' + p + '%"></div></div>'
+      + '<div class="wk-pct">' + p + '%</div></div>';
+  });
+  document.getElementById('wkBars').innerHTML = wkHtml;
+}
+
+function confetti() {
+  var wrap = document.getElementById('cfwrap');
+  var cols = ['#185FA5','#3B6D11','#854F0B','#993C1D','#534AB7','#0F6E56','#378ADD'];
+  for (var i = 0; i < 22; i++) {
+    var p = document.createElement('div'); p.className = 'cp';
+    p.style.cssText = 'left:' + (15+Math.random()*70) + '%;background:' + cols[i%cols.length] + ';animation-delay:' + (Math.random()*.4) + 's;animation-duration:' + (.9+Math.random()*.7) + 's';
+    wrap.appendChild(p);
+    setTimeout((function(el) { return function() { el.remove(); }; })(p), 2000);
+  }
+}
+
+renderHome();
+
+var KWEEKS=[{"wk": "Week 1", "sub": "Awareness - find the muscle", "sessions": [{"title": "Morning activation", "icon": "&#127749;", "sets": 3, "hold": 5, "rest": 5, "tip": "Find the muscle by imagining you are stopping urine mid-flow. Do not tighten abs, glutes, or thighs.", "desc": "Hold 5 sec, release 5 sec"}, {"title": "Midday quick fire", "icon": "&#9889;", "sets": 2, "hold": 2, "rest": 2, "tip": "Rapid contractions - squeeze and release as fast as you can. Builds fast-twitch pelvic floor fibres.", "desc": "Fast squeeze and release"}, {"title": "Evening hold", "icon": "&#127769;", "sets": 2, "hold": 8, "rest": 6, "tip": "Longer holds build endurance. Breathe normally while squeezing - never hold your breath.", "desc": "Hold 8 sec, release 6 sec"}]}, {"wk": "Week 2", "sub": "Build - add duration", "sessions": [{"title": "Morning activation", "icon": "&#127749;", "sets": 3, "hold": 8, "rest": 5, "tip": "More awareness now. Focus on squeezing only the pelvic floor, not the glutes or abs.", "desc": "Hold 8 sec, release 5 sec"}, {"title": "Midday quick fire", "icon": "&#9889;", "sets": 3, "hold": 2, "rest": 2, "tip": "Speed and control. Fast-twitch reps improve reflex control during arousal.", "desc": "Fast squeeze and release"}, {"title": "Evening endurance", "icon": "&#127769;", "sets": 3, "hold": 10, "rest": 8, "tip": "10-second holds are hard. Shaking or burning is normal - the muscle is working.", "desc": "Hold 10 sec, release 8 sec"}]}, {"wk": "Week 3", "sub": "Intensity - mix holds and pulses", "sessions": [{"title": "Power holds", "icon": "&#128170;", "sets": 4, "hold": 10, "rest": 6, "tip": "Squeeze at full intensity. Imagine stopping flow while also lifting upward. That dual action recruits more muscle.", "desc": "Max intensity hold 10 sec"}, {"title": "Pulse intervals", "icon": "&#9889;", "sets": 3, "hold": 1, "rest": 1, "tip": "Rapid-fire pulses with no pause between. Trains the reflex response that matters most during sex.", "desc": "Rapid pulse - 1 sec on, 1 sec off"}, {"title": "Long hold", "icon": "&#127769;", "sets": 3, "hold": 15, "rest": 10, "tip": "15-second holds. Count out loud to stop yourself cutting it short. Full release after each hold is as important as the hold.", "desc": "Hold 15 sec, release 10 sec"}]}, {"wk": "Week 4", "sub": "Mastery - full control", "sessions": [{"title": "Pyramid holds", "icon": "&#128314;", "sets": 4, "hold": 12, "rest": 6, "tip": "Squeeze progressively harder over 4 seconds to peak, hold 4 seconds, release slowly over 4 seconds. Full control.", "desc": "Progressive squeeze and release"}, {"title": "Max pulse burst", "icon": "&#9889;", "sets": 4, "hold": 1, "rest": 1, "tip": "These pulses directly train ejaculation delay. By now your reflex control should be noticeably better.", "desc": "Max speed pulse - 20 reps per set"}, {"title": "Endurance master", "icon": "&#127942;", "sets": 3, "hold": 20, "rest": 10, "tip": "20-second holds. Breathe steadily. Reaching this comfortably means you have built strong pelvic floor endurance.", "desc": "Hold 20 sec, release 10 sec"}]}];
+var perfWk=0,KT={};
+try{var _ks=localStorage.getItem('njare-k');if(_ks)KT=JSON.parse(_ks);}catch(e){}
+function saveK(){try{localStorage.setItem('njare-k',JSON.stringify(KT));}catch(e){}}
+function ksk(wi,si,i){return 'k'+wi+si+i;}
+function kDone(wi,si){var s=KWEEKS[wi].sessions[si];for(var i=0;i<s.sets;i++){if(!KT[ksk(wi,si,i)])return false;}return true;}
+var KTM={};
+function renderPerfTab(){
+  var el=document.getElementById('perfWeekStrip');el.innerHTML='';
+  KWEEKS.forEach(function(W,wi){
+    var done=KWEEKS[wi].sessions.every(function(_,si){return kDone(wi,si);});
+    var p=document.createElement('button');
+    p.className='perf-pill'+(wi===perfWk?' active':'')+(done?' complete':'');
+    p.textContent=W.wk+(done?' ✓':'');
+    p.onclick=(function(w){return function(){perfWk=w;renderPerfTab();};})(wi);
+    el.appendChild(p);
+  });
+  var wrap=document.getElementById('perfContent');wrap.innerHTML='';
+  var W=KWEEKS[perfWk];
+  wrap.innerHTML='<div class="sec-label">'+W.wk+' — '+W.sub+'</div>'
+    +'<div class="perf-info-card"><div class="perf-info-title">How Kegels improve performance</div>'
+    +'<div class="perf-info-item"><div class="perf-info-dot"></div><div class="perf-info-text"><strong>Delay ejaculation</strong> — a strong PC muscle lets you consciously extend duration.</div></div>'
+    +'<div class="perf-info-item"><div class="perf-info-dot"></div><div class="perf-info-text"><strong>Stronger finish</strong> — the same muscles that control ejaculation also control intensity.</div></div>'
+    +'<div class="perf-info-item"><div class="perf-info-dot"></div><div class="perf-info-text"><strong>Better quality</strong> — pelvic floor exercises improve blood flow to the area.</div></div>'
+    +'<div class="perf-info-item"><div class="perf-info-dot"></div><div class="perf-info-text"><strong>Nobody can tell</strong> — do these anywhere. No equipment needed.</div></div></div>';
+  W.sessions.forEach(function(sess,si){
+    var wi=perfWk,sk='p'+wi+si,allDone=kDone(wi,si),dn=0;
+    for(var i=0;i<sess.sets;i++){if(KT[ksk(wi,si,i)])dn++;}
+    var sb='';
+    for(var i=0;i<sess.sets;i++){var d=!!KT[ksk(wi,si,i)];
+      sb+='<div class="kegel-set-btn'+(d?' done':'')+'" onclick="tkSet('+wi+','+si+','+i+')">'
+        +'<div class="ks-num">'+(i+1)+'</div><div class="ks-lbl">'+(d?'&#10003;':sess.hold+'s')+'</div></div>';}
+    var card=document.createElement('div');card.className='kegel-card';
+    card.innerHTML='<div class="kegel-hdr"><div class="kegel-hdr-left"><div class="kegel-icon">'+sess.icon+'</div>'
+      +'<div><div class="kegel-title">'+sess.title+'</div><div class="kegel-sub">'+sess.desc+'</div></div></div>'
+      +'<div class="kegel-badge" style="background:'+(allDone?'#EAF3DE':'#EEEDFE')+';color:'+(allDone?'#3B6D11':'#534AB7')+'">'
+      +(allDone?'&#10003; Done':dn+'/'+sess.sets)+'</div></div>'
+      +'<div class="kegel-body"><div class="kegel-sets" id="ks-'+sk+'">'+sb+'</div>'
+      +'<div class="kegel-timer-row"><div class="kegel-timer-num" id="kn-'+sk+'">'+sess.hold+'</div>'
+      +'<div class="kegel-timer-lbl" id="kl-'+sk+'">Squeeze '+sess.hold+'s</div>'
+      +'<button class="kt-btn kt-reset" onclick="kRst(''+sk+'','+sess.hold+')">Reset</button>'
+      +'<button class="kt-btn" id="kb-'+sk+'" onclick="kTgl(''+sk+'','+sess.hold+','+sess.rest+')">Start</button></div>'
+      +'<div class="kegel-tip"><strong>Tip:</strong> '+sess.tip+'</div></div>';
+    wrap.appendChild(card);
+  });
+  var ov='<div class="perf-overall"><div class="perf-ov-title">Kegel progress</div>';
+  KWEEKS.forEach(function(W2,wi){var t=W2.sessions.length,d=W2.sessions.filter(function(_,si){return kDone(wi,si);}).length,p=Math.round(d/t*100);
+    ov+='<div class="perf-ov-row"><div class="perf-ov-lbl">'+W2.wk+'</div><div class="perf-ov-bar"><div class="perf-ov-fill" style="width:'+p+'%"></div></div><div class="perf-ov-pct">'+p+'%</div></div>';});
+  wrap.innerHTML+=ov+'</div>';
+}
+function tkSet(wi,si,i){
+  var k=ksk(wi,si,i);KT[k]=!KT[k];saveK();
+  var sess=KWEEKS[wi].sessions[si],sk='p'+wi+si,allDone=kDone(wi,si),dn=0;
+  for(var j=0;j<sess.sets;j++){if(KT[ksk(wi,si,j)])dn++;}
+  var g=document.getElementById('ks-'+sk);
+  if(g){g.querySelectorAll('.kegel-set-btn').forEach(function(b,j){var d=!!KT[ksk(wi,si,j)];b.className='kegel-set-btn'+(d?' done':'');b.innerHTML='<div class="ks-num">'+(j+1)+'</div><div class="ks-lbl">'+(d?'&#10003;':sess.hold+'s')+'</div>';});
+  var c=g.closest('.kegel-card');if(c){var bg=c.querySelector('.kegel-badge');if(bg){bg.style.background=allDone?'#EAF3DE':'#EEEDFE';bg.style.color=allDone?'#3B6D11':'#534AB7';bg.innerHTML=allDone?'&#10003; Done':dn+'/'+sess.sets;}}}
+  if(allDone)confetti();
+}
+function kTgl(sk,hold,rest){
+  var bn=document.getElementById('kb-'+sk),n=document.getElementById('kn-'+sk),l=document.getElementById('kl-'+sk);
+  if(!bn||!n)return;
+  if(KTM[sk]){clearInterval(KTM[sk]);KTM[sk]=null;bn.className='kt-btn';bn.textContent='Resume';return;}
+  if(!KTM[sk+'_s'])KTM[sk+'_s']={ph:'hold',t:hold};
+  var st=KTM[sk+'_s'];bn.className='kt-btn stop';bn.textContent='Pause';
+  KTM[sk]=setInterval(function(){st.t--;n.textContent=st.t;
+    if(st.t<=0){if(st.ph==='hold'){st.ph='rest';st.t=rest;n.style.color='#3B6D11';if(l)l.textContent='Rest '+rest+'s';}
+    else{st.ph='hold';st.t=hold;n.style.color='#2D1B69';if(l)l.textContent='Squeeze '+hold+'s';}}},1000);
+}
+function kRst(sk,hold){
+  if(KTM[sk]){clearInterval(KTM[sk]);KTM[sk]=null;}KTM[sk+'_s']={ph:'hold',t:hold};
+  var n=document.getElementById('kn-'+sk),l=document.getElementById('kl-'+sk),b=document.getElementById('kb-'+sk);
+  if(n){n.textContent=hold;n.style.color='#2D1B69';}if(l)l.textContent='Squeeze '+hold+'s';
+  if(b){b.className='kt-btn';b.textContent='Start';}
+}
+var FATWEEKS=[{"wk": "Week 1", "sub": "Activate - wake up the muscles", "sessions": [{"title": "HIIT Cardio Blast", "icon": "&#128293;", "type": "hiit", "exercises": [{"n": "Jumping jacks", "r": "3 x 40 sec", "m": "Full body cardio - burns calories fast"}, {"n": "High knees", "r": "3 x 30 sec", "m": "Hip flexors - cardio - warms glutes"}, {"n": "Jump squats", "r": "3 x 12 reps", "m": "Quads - glutes - explosive cardio"}, {"n": "Butt kicks", "r": "3 x 30 sec", "m": "Hamstrings - glutes - cardio"}], "tip": "Spikes heart rate into fat-burning zone. Rest 30 sec between sets."}, {"title": "Glute and Hip Reduction", "icon": "&#127919;", "type": "toning", "exercises": [{"n": "Hip abductions (side-lying)", "r": "3 x 20 each", "m": "Outer glutes - hip abductors - tones without bulk"}, {"n": "Donkey kicks", "r": "3 x 15 each", "m": "Lower glutes - tones and lifts without adding size"}, {"n": "Reverse leg raises", "r": "3 x 15 each", "m": "Lower glute crease - reduces fat at sit-bone area"}, {"n": "Clam shells", "r": "3 x 20 each", "m": "Hip abductors - outer thigh - lean and tone"}], "tip": "High reps with bodyweight = fat burn and toning, not bulking. This is what reduces glute size in men."}, {"title": "Full Body Fat Burn", "icon": "&#9889;", "type": "circuit", "exercises": [{"n": "Burpees", "r": "3 x 10 reps", "m": "Full body - highest calorie burn per rep"}, {"n": "Mountain climbers", "r": "3 x 30 sec", "m": "Core - hip flexors - cardio"}, {"n": "Jump lunges", "r": "3 x 10 each", "m": "Quads - glutes - explosive fat burn"}, {"n": "Squat hold", "r": "3 x 30 sec", "m": "Quads - glutes - isometric burn"}], "tip": "Full body circuits burn more total calories than isolation work. Aim for 3-4x per week."}]}, {"wk": "Week 2", "sub": "Accelerate - more volume", "sessions": [{"title": "HIIT Cardio Blast", "icon": "&#128293;", "type": "hiit", "exercises": [{"n": "Jumping jacks", "r": "4 x 40 sec", "m": "Full body cardio"}, {"n": "High knees", "r": "4 x 35 sec", "m": "Hip flexors - cardio"}, {"n": "Jump squats", "r": "4 x 15 reps", "m": "Quads - glutes - cardio"}, {"n": "Sprint in place", "r": "4 x 20 sec", "m": "Full body - max heart rate"}], "tip": "Add 1 more set. Push harder - you should be sweating hard by round 2."}, {"title": "Glute and Hip Reduction", "icon": "&#127919;", "type": "toning", "exercises": [{"n": "Hip abductions (side-lying)", "r": "4 x 25 each", "m": "Outer glutes - hip abductors"}, {"n": "Donkey kicks", "r": "4 x 20 each", "m": "Lower glutes - tones without bulk"}, {"n": "Reverse leg raises", "r": "4 x 20 each", "m": "Lower glute crease"}, {"n": "Clam shells", "r": "4 x 25 each", "m": "Hip abductors - outer thigh"}, {"n": "Side-lying leg raises", "r": "3 x 20 each", "m": "Outer hip - reduces hip width"}], "tip": "Increase reps this week. Feel the burn specifically in the outer glute and hip area."}, {"title": "Full Body Fat Burn", "icon": "&#9889;", "type": "circuit", "exercises": [{"n": "Burpees", "r": "4 x 12 reps", "m": "Full body - calorie burn"}, {"n": "Mountain climbers", "r": "4 x 35 sec", "m": "Core - cardio"}, {"n": "Jump lunges", "r": "4 x 12 each", "m": "Quads - glutes"}, {"n": "Squat hold", "r": "3 x 40 sec", "m": "Quads - glutes - isometric"}, {"n": "Step-ups on chair", "r": "3 x 15 each", "m": "Glutes - quads - lean and functional"}], "tip": "Rest 45 sec between exercises, 90 sec between full rounds."}]}, {"wk": "Week 3", "sub": "Intensity - max fat burn", "sessions": [{"title": "HIIT Tabata", "icon": "&#128293;", "type": "hiit", "exercises": [{"n": "Jump squats tabata", "r": "8 x 20 sec on, 10 sec off", "m": "Quads - glutes - max cardio"}, {"n": "High knees tabata", "r": "8 x 20 sec on, 10 sec off", "m": "Hip flexors - cardio"}, {"n": "Burpees tabata", "r": "6 x 20 sec on, 10 sec off", "m": "Full body - peak fat burn"}, {"n": "Sprint in place tabata", "r": "6 x 20 sec on, 10 sec off", "m": "Legs - cardio - metabolism boost"}], "tip": "Tabata spikes metabolism for up to 24 hours after. Push to 90-100% effort during the 20 sec on."}, {"title": "Glute and Hip Reduction", "icon": "&#127919;", "type": "toning", "exercises": [{"n": "Hip abductions (standing)", "r": "4 x 30 each", "m": "Outer glutes - hip abductors"}, {"n": "Donkey kicks with 1 sec pause", "r": "4 x 20 each", "m": "Lower glutes - hold at top"}, {"n": "Reverse leg raises", "r": "4 x 25 each", "m": "Lower glute crease"}, {"n": "Fire hydrants", "r": "4 x 20 each", "m": "Outer hip - glute medius - reduces hip width directly"}, {"n": "Side-lying leg raises", "r": "4 x 25 each", "m": "Outer hip - outer thigh"}], "tip": "Fire hydrants target the glute medius - the muscle that causes wide hips in men. These are the most important exercise on this tab."}, {"title": "Full Body Chipper", "icon": "&#9889;", "type": "circuit", "exercises": [{"n": "50 x jumping jacks", "r": "break as needed", "m": "Full body cardio"}, {"n": "40 x mountain climbers", "r": "break as needed", "m": "Core - cardio"}, {"n": "30 x jump squats", "r": "break as needed", "m": "Quads - glutes"}, {"n": "20 x burpees", "r": "break as needed", "m": "Full body"}, {"n": "10 x jump lunges each side", "r": "break as needed", "m": "Glutes - quads"}], "tip": "Time yourself. Minimal rest. Try to beat your time each session."}]}, {"wk": "Week 4", "sub": "Peak - see your transformation", "sessions": [{"title": "Max HIIT", "icon": "&#128293;", "type": "hiit", "exercises": [{"n": "Jump squats max effort", "r": "4 x 45 sec", "m": "Quads - glutes - cardio"}, {"n": "Sprint in place", "r": "4 x 30 sec", "m": "Full body - peak heart rate"}, {"n": "Burpees", "r": "4 x 15 reps", "m": "Full body - max burn"}, {"n": "Jump lunges", "r": "4 x 15 each", "m": "Glutes - quads - cardio"}], "tip": "Your hardest HIIT session. Push to your absolute limit."}, {"title": "Glute Toning Finisher", "icon": "&#127919;", "type": "toning", "exercises": [{"n": "Hip abductions (standing)", "r": "5 x 30 each", "m": "Outer glutes - hip abductors"}, {"n": "Donkey kicks with pause", "r": "5 x 20 each", "m": "Lower glutes"}, {"n": "Fire hydrants", "r": "5 x 20 each", "m": "Outer hip - glute medius"}, {"n": "Reverse leg raises", "r": "4 x 25 each", "m": "Lower glute crease"}, {"n": "Side plank hip dips", "r": "3 x 15 each", "m": "Obliques - outer hip - flattens the hip area"}], "tip": "5 sets this week. Focus on mind-muscle connection - feel the target area burning with each rep."}, {"title": "Transformation Test", "icon": "&#127942;", "type": "circuit", "exercises": [{"n": "Max burpees in 3 min", "r": "3 min AMRAP", "m": "Full body test"}, {"n": "Max jump squats in 2 min", "r": "2 min AMRAP", "m": "Quads - glutes"}, {"n": "Max mountain climbers in 2 min", "r": "2 min AMRAP", "m": "Core - cardio"}, {"n": "1.5 km run for time", "r": "timed", "m": "Cardio endurance"}], "tip": "Record every score. Compare to Week 1. That difference is your transformation."}]}];
+var fatWk=0,FST={};
+try{var _fs=localStorage.getItem('njare-f');if(_fs)FST=JSON.parse(_fs);}catch(e){}
+function saveF(){try{localStorage.setItem('njare-f',JSON.stringify(FST));}catch(e){}}
+function fek(wi,si,ei){return 'f'+wi+si+ei;}
+function fSD(wi,si){return FATWEEKS[wi].sessions[si].exercises.every(function(_,ei){return FST[fek(wi,si,ei)];});}
+function renderFatTab(){
+  var el=document.getElementById('fatWeekStrip');el.innerHTML='';
+  FATWEEKS.forEach(function(W,wi){
+    var done=FATWEEKS[wi].sessions.every(function(_,si){return fSD(wi,si);});
+    var p=document.createElement('button');
+    p.className='fat-pill'+(wi===fatWk?' active':'')+(done?' complete':'');
+    p.textContent=W.wk+(done?' ✓':'');
+    p.onclick=(function(w){return function(){fatWk=w;renderFatTab();};})(wi);
+    el.appendChild(p);
+  });
+  var wrap=document.getElementById('fatContent');wrap.innerHTML='';
+  var W=FATWEEKS[fatWk];
+  wrap.innerHTML='<div class="sec-label">'+W.wk+' — '+W.sub+'</div>'
+    +'<div class="fat-info"><div class="fat-info-title">Why these exercises reduce glute size in men</div>'
+    +'<div class="fat-info-item"><div class="fat-info-dot"></div><div class="fat-info-text"><strong>Spot reduction is a myth</strong> — cardio burns fat from the whole body and glutes shrink proportionally.</div></div>'
+    +'<div class="fat-info-item"><div class="fat-info-dot"></div><div class="fat-info-text"><strong>High reps, no heavy weight</strong> — tones without adding bulk to the area.</div></div>'
+    +'<div class="fat-info-item"><div class="fat-info-dot"></div><div class="fat-info-text"><strong>Diet matters 70%</strong> — cut sugar, refined carbs and alcohol. Eat more protein and vegetables.</div></div>'
+    +'<div class="fat-info-item"><div class="fat-info-dot"></div><div class="fat-info-text"><strong>Results in 4-6 weeks</strong> — with 4-5 sessions per week and consistent diet.</div></div></div>';
+  W.sessions.forEach(function(sess,si){
+    var wi=fatWk,done=fSD(wi,si),dc=sess.exercises.filter(function(_,ei){return FST[fek(wi,si,ei)];}).length;
+    var rows=sess.exercises.map(function(ex,ei){var t=!!FST[fek(wi,si,ei)];
+      return '<div class="fat-ex-row'+(t?' done':'')+'" onclick="tFE('+wi+','+si+','+ei+')">'
+        +'<div class="fat-ex-check'+(t?' ticked':'')+'"><svg viewBox="0 0 14 14"><polyline points="2 7 6 11 12 3"/></svg></div>'
+        +'<div class="fat-ex-info"><div class="fat-ex-name">'+ex.n+'</div><div class="fat-ex-muscle">'+ex.m+'</div></div>'
+        +'<div class="fat-ex-reps">'+ex.r+'</div></div>';}).join('');
+    var card=document.createElement('div');card.className='fat-session-card';
+    card.innerHTML='<div class="fat-session-hdr"><div class="fat-session-hdr-left"><div class="fat-session-icon">'+sess.icon+'</div>'
+      +'<div><div class="fat-session-title">'+sess.title+'</div><div class="fat-session-sub">'+sess.type+'</div></div></div>'
+      +'<div class="fat-session-badge" style="background:'+(done?'#EAF3DE':'#FEF0EE')+';color:'+(done?'#3B6D11':'#C0392B')+'">'
+      +(done?'&#10003; Done':dc+'/'+sess.exercises.length)+'</div></div>'
+      +'<div class="fat-ex-list" id="fl-'+wi+'-'+si+'">'+rows+'</div>';
+    var tip=document.createElement('div');tip.className='fat-tip-box';tip.innerHTML='<strong>Tip:</strong> '+sess.tip;
+    wrap.appendChild(card);wrap.appendChild(tip);
+  });
+  var ov='<div class="fat-overall"><div class="fat-ov-title">Burn & Sculpt progress</div>';
+  FATWEEKS.forEach(function(W2,wi){
+    var tot=W2.sessions.reduce(function(s,se){return s+se.exercises.length;},0);
+    var dn=W2.sessions.reduce(function(s,se,si2){return s+se.exercises.filter(function(_,ei){return FST[fek(wi,si2,ei)];}).length;},0);
+    var p=Math.round(dn/Math.max(tot,1)*100);
+    ov+='<div class="fat-ov-row"><div class="fat-ov-lbl">'+W2.wk+'</div><div class="fat-ov-bar"><div class="fat-ov-fill" style="width:'+p+'%"></div></div><div class="fat-ov-pct">'+p+'%</div></div>';});
+  wrap.innerHTML+=ov+'</div>';
+  wrap.innerHTML+='<div class="fat-diet-card"><div class="fat-diet-title">&#129382; Diet tips to accelerate fat loss</div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">1</div><div class="fat-diet-text">Cut sugar and refined carbs — white bread, soda, sweets, pastries</div></div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">2</div><div class="fat-diet-text">Eat protein with every meal — eggs, chicken, fish, beans, Greek yogurt</div></div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">3</div><div class="fat-diet-text">Drink 2.5–3 litres of water daily — reduces bloating around the hips</div></div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">4</div><div class="fat-diet-text">Cut alcohol — stored directly as fat in the hips and glutes in men</div></div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">5</div><div class="fat-diet-text">Fill half your plate with vegetables — high volume, almost zero calories</div></div>'
+    +'<div class="fat-diet-row"><div class="fat-diet-num">6</div><div class="fat-diet-text">Sleep 7–9 hours — poor sleep raises cortisol which drives fat storage in the lower body</div></div></div>';
+}
+function tFE(wi,si,ei){
+  var k=fek(wi,si,ei);FST[k]=!FST[k];saveF();
+  var done=fSD(wi,si),dc=FATWEEKS[wi].sessions[si].exercises.filter(function(_,i2){return FST[fek(wi,si,i2)];}).length,tot=FATWEEKS[wi].sessions[si].exercises.length;
+  var list=document.getElementById('fl-'+wi+'-'+si);
+  if(list){list.querySelectorAll('.fat-ex-row').forEach(function(r,i2){var t=!!FST[fek(wi,si,i2)];r.className='fat-ex-row'+(t?' done':'');var ck=r.querySelector('.fat-ex-check');if(ck)ck.className='fat-ex-check'+(t?' ticked':'');});
+  var c=list.closest('.fat-session-card');if(c){var bg=c.querySelector('.fat-session-badge');if(bg){bg.style.background=done?'#EAF3DE':'#FEF0EE';bg.style.color=done?'#3B6D11':'#C0392B';bg.innerHTML=done?'&#10003; Done':dc+'/'+tot;}}}
+  if(done)confetti();
+}
+
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+var DS={};
+try{var _ds=localStorage.getItem('njare-dash');if(_ds)DS=JSON.parse(_ds);}catch(e){}
+function saveDS(){try{localStorage.setItem('njare-dash',JSON.stringify(DS));}catch(e){}}
+var _moodIdx=-1;
+
+function renderDash(){
+  var h2=new Date().getHours(),name=DS.name?', '+DS.name:'';
+  var g=h2<12?'Good morning':h2<17?'Good afternoon':'Good evening';
+  document.getElementById('dashGreeting').innerHTML=g+name+' &#128075;';
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var now=new Date();
+  document.getElementById('dashDate').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('streakNum').textContent=calcStreak();
+  renderBmiDisplay();
+  renderCoach();
+  renderTileProgress();
+  renderGoals();
+  renderCheckIn();
+  renderLog();
+}
+
+function calcStreak(){
+  var logs=DS.checkIns||[];if(!logs.length)return 0;
+  var today=new Date();today.setHours(0,0,0,0);var streak=0,cur=new Date(today);
+  for(var i=logs.length-1;i>=0;i--){var d=new Date(logs[i].date);d.setHours(0,0,0,0);
+    if(d.getTime()===cur.getTime()){streak++;cur.setDate(cur.getDate()-1);}else if(d<cur)break;}
+  return streak;
+}
+
+function toggleBmiForm(){
+  var f=document.getElementById('bmiForm');f.classList.toggle('show');
+  if(f.classList.contains('show')&&DS.weight){
+    document.getElementById('inWeight').value=DS.weight||'';
+    document.getElementById('inHeight').value=DS.height||'';
+    document.getElementById('inAge').value=DS.age||'';
+    document.getElementById('inSex').value=DS.sex||'male';
+    document.getElementById('inNeck').value=DS.neck||'';
+    document.getElementById('inWaist').value=DS.waist||'';
+  }
+}
+
+function saveBmi(){
+  var w=parseFloat(document.getElementById('inWeight').value);
+  var ht=parseFloat(document.getElementById('inHeight').value);
+  var age=parseFloat(document.getElementById('inAge').value);
+  var sex=document.getElementById('inSex').value;
+  var neck=parseFloat(document.getElementById('inNeck').value);
+  var waist=parseFloat(document.getElementById('inWaist').value);
+  if(!w||!ht){alert('Please enter weight and height.');return;}
+  DS.weight=w;DS.height=ht;DS.age=age;DS.sex=sex;DS.neck=neck;DS.waist=waist;
+  DS.bmiHistory=DS.bmiHistory||[];
+  DS.bmiHistory.push({date:new Date().toISOString(),weight:w});
+  saveDS();document.getElementById('bmiForm').classList.remove('show');
+  renderBmiDisplay();renderCoach();renderLog();
+}
+
+function renderBmiDisplay(){
+  if(!DS.weight||!DS.height){
+    document.getElementById('bmiVal').textContent='--';
+    document.getElementById('bmiWeight').textContent='--';
+    document.getElementById('bmiHeight').textContent='--';
+    document.getElementById('bmiCat').textContent='Tap Edit to enter your stats';
+    document.getElementById('bmiCat').style.color='#B4B2A9';
+    document.getElementById('bfDisplay').textContent='';return;
+  }
+  var bmi=DS.weight/Math.pow(DS.height/100,2),bmiR=Math.round(bmi*10)/10;
+  document.getElementById('bmiVal').textContent=bmiR;
+  document.getElementById('bmiWeight').textContent=DS.weight+' kg';
+  document.getElementById('bmiHeight').textContent=DS.height+' cm';
+  var cat,col,pct;
+  if(bmi<18.5){cat='Underweight';col='#3B82F6';pct=Math.max(2,(bmi/18.5)*18);}
+  else if(bmi<25){cat='Normal weight';col='#22C55E';pct=18+((bmi-18.5)/6.5)*12;}
+  else if(bmi<30){cat='Overweight';col='#F59E0B';pct=30+((bmi-25)/5)*20;}
+  else{cat='Obese';col='#EF4444';pct=Math.min(96,50+((bmi-30)/10)*46);}
+  document.getElementById('bmiCat').textContent=cat;document.getElementById('bmiCat').style.color=col;
+  document.getElementById('bmiPtr').style.left=pct+'%';
+  if(DS.neck&&DS.waist&&DS.height){
+    var bf;
+    if(DS.sex==='male'){bf=495/(1.0324-0.19077*Math.log10(DS.waist-DS.neck)+0.15456*Math.log10(DS.height))-450;}
+    else{bf=495/(1.29579-0.35004*Math.log10(DS.waist+(DS.hip||0)-DS.neck)+0.22100*Math.log10(DS.height))-450;}
+    bf=Math.round(bf*10)/10;DS.bodyFat=bf;saveDS();
+    var bfCat=bf<6?'Essential fat':bf<14?'Athletic':bf<18?'Fitness':bf<25?'Average':'High';
+    document.getElementById('bfDisplay').textContent='Body fat: ~'+bf+'% ('+bfCat+')';
+  }
+}
+
+function renderCoach(){
+  var msgs=[],tips=[];
+  if(!DS.weight){msgs.push('Set up your body stats to get personalised coaching.');tips.push('Tap Edit on Body Stats above to enter your height, weight, and measurements.');}
+  else{
+    var bmi=DS.weight/Math.pow(DS.height/100,2),streak=calcStreak();
+    if(streak===0)msgs.push('Log your first check-in today to start your streak!');
+    else if(streak<3)msgs.push(DS.name?DS.name+', you':'You'+"'re on a "+streak+'-day streak. Keep showing up!');
+    else if(streak<7)msgs.push('Strong work! '+streak+' days in a row. The habit is forming.');
+    else msgs.push('Incredible! '+streak+'-day streak. You are becoming unstoppable.');
+    if(bmi>27)tips.push('Your BMI is above healthy range. The Burn & Sculpt program plus reducing sugar and alcohol will move this fastest.');
+    else if(bmi>25)tips.push('Just above healthy BMI. Consistent training and cutting refined carbs will get you there.');
+    else if(bmi<18.5)tips.push('BMI is below healthy range. Focus on eating more protein and total calories.');
+    else tips.push('BMI is in the healthy range. Focus on building strength and maintaining body composition.');
+    if(DS.bodyFat&&DS.sex==='male'){
+      if(DS.bodyFat>25)tips.push('Body fat is above average. HIIT 4x per week and cutting alcohol will reduce it fastest.');
+      else if(DS.bodyFat>18)tips.push('Body fat is in the average range. The Burn & Sculpt program and diet changes will improve this.');
+    }
+  }
+  document.getElementById('coachMsg').textContent=msgs[0]||'Consistency beats perfection. Every session counts.';
+  document.getElementById('coachTip').textContent=tips[0]||'';
+}
+
+function renderTileProgress(){
+  var milEx=0,milDone=0;
+  if(typeof PLAN!=='undefined'){PLAN.forEach(function(W,wi){W.days.forEach(function(d,di){var exs=d.exs||[];milEx+=exs.length;exs.forEach(function(_,ei){if(ST[ek(wi,di,ei)])milDone++;});});});}
+  var milP=Math.round(milDone/Math.max(milEx,1)*100);
+  var mf=document.getElementById('tilemilfill');if(mf)mf.style.width=milP+'%';
+  var ms=document.getElementById('tilemil');if(ms)ms.textContent=milP+'% complete';
+  var fatEx=0,fatDn=0;
+  if(typeof FATWEEKS!=='undefined'){FATWEEKS.forEach(function(W,wi){W.sessions.forEach(function(se,si){fatEx+=se.exercises.length;se.exercises.forEach(function(_,ei){if(FST[fek(wi,si,ei)])fatDn++;});});});}
+  var fatP=Math.round(fatDn/Math.max(fatEx,1)*100);
+  var ff=document.getElementById('tilefatfill');if(ff)ff.style.width=fatP+'%';
+  var fs2=document.getElementById('tilefat');if(fs2)fs2.textContent=fatP+'% complete';
+  var kEx=0,kDn=0;
+  if(typeof KWEEKS!=='undefined'){KWEEKS.forEach(function(W,wi){W.sessions.forEach(function(se,si){kEx+=se.sets;for(var i=0;i<se.sets;i++){if(KT[ksk(wi,si,i)])kDn++;}});});}
+  var kP=Math.round(kDn/Math.max(kEx,1)*100);
+  var kf=document.getElementById('tileperfill');if(kf)kf.style.width=kP+'%';
+  var ks2=document.getElementById('tileperf');if(ks2)ks2.textContent=kP+'% complete';
+}
+
+function renderGoals(){
+  var goals=DS.goals||[],el=document.getElementById('goalsList');
+  if(!goals.length){el.innerHTML='<div style="padding:14px 16px;font-size:13px;color:#B4B2A9">No goals yet. Tap + Add to set daily targets.</div>';return;}
+  var today=new Date().toDateString();
+  el.innerHTML=goals.map(function(g,i){var done=DS.goalDone&&DS.goalDone[today]&&DS.goalDone[today][i];
+    return '<div class="goal-row'+(done?' done-goal':'')+'" onclick="toggleGoal('+i+')">'
+      +'<div class="goal-ck'+(done?' done':'')+'">'+( done?'&#10003;':'')+'</div>'
+      +'<div class="goal-text">'+g+'</div></div>';}).join('');
+}
+
+function toggleGoal(i){
+  var today=new Date().toDateString();DS.goalDone=DS.goalDone||{};DS.goalDone[today]=DS.goalDone[today]||{};
+  DS.goalDone[today][i]=!DS.goalDone[today][i];saveDS();renderGoals();
+}
+
+function renderCheckIn(){
+  var logs=DS.checkIns||[];
+  var sub=document.getElementById('checkInSub'),due=document.getElementById('checkInDueBadge');
+  if(!logs.length){sub.textContent='Start your first check-in today!';due.style.display='block';return;}
+  var last=new Date(logs[logs.length-1].date),now2=new Date();
+  var diff=Math.floor((now2-last)/86400000);
+  if(diff>=10){sub.textContent='Check-in overdue! Last was '+diff+' days ago.';due.style.display='block';}
+  else{sub.textContent='Next check-in in '+(10-diff)+' day'+(10-diff===1?'':'s');due.style.display='none';}
+}
+
+function renderLog(){
+  var el=document.getElementById('logList'),entries=[];
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  (DS.bmiHistory||[]).forEach(function(e){
+    var ht=DS.height||170,bmi=e.weight/Math.pow(ht/100,2);
+    entries.push({date:e.date,label:'Weight logged',val:e.weight+' kg — BMI '+Math.round(bmi*10)/10,color:'#185FA5'});
+  });
+  var moods=['&#128128;','&#128529;','&#128512;','&#128293;','&#129351;'];
+  (DS.checkIns||[]).forEach(function(c){
+    entries.push({date:c.date,label:'Check-in',val:(moods[c.mood!=null?c.mood:2])+' Sleep '+(c.sleep||'?')+'h · Water '+(c.water||'?')+'L',color:'#3B6D11'});
+  });
+  entries.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(!entries.length){el.innerHTML='<div style="padding:14px 16px;font-size:13px;color:#B4B2A9">Your progress log will appear here.</div>';return;}
+  el.innerHTML=entries.slice(0,10).map(function(e){
+    var d=new Date(e.date),ds2=d.getDate()+' '+months[d.getMonth()];
+    return '<div class="log-entry"><div class="log-dot" style="background:'+e.color+'"></div>'
+      +'<div class="log-entry-info"><div class="log-entry-title">'+e.label+'</div><div class="log-entry-date">'+ds2+'</div></div>'
+      +'<div class="log-entry-val">'+e.val+'</div></div>';}).join('');
+}
+
+function selMood(i){
+  _moodIdx=i;
+  document.querySelectorAll('.mood-btn').forEach(function(b,j){b.className='mood-btn'+(j===i?' sel':'');});
+}
+
+function saveCheckIn(){
+  var sleep=parseFloat(document.getElementById('ciSleep').value);
+  var water=parseFloat(document.getElementById('ciWater').value);
+  var weight=parseFloat(document.getElementById('ciWeight').value);
+  var notes=document.getElementById('ciNotes').value;
+  var entry={date:new Date().toISOString(),mood:_moodIdx>=0?_moodIdx:2,sleep:sleep||null,water:water||null,notes:notes};
+  if(weight){entry.weight=weight;DS.weight=weight;DS.bmiHistory=DS.bmiHistory||[];DS.bmiHistory.push({date:entry.date,weight:weight});}
+  DS.checkIns=DS.checkIns||[];DS.checkIns.push(entry);saveDS();
+  document.getElementById('ciSleep').value='';document.getElementById('ciWater').value='';
+  document.getElementById('ciWeight').value='';document.getElementById('ciNotes').value='';
+  _moodIdx=-1;document.querySelectorAll('.mood-btn').forEach(function(b){b.className='mood-btn';});
+  renderBmiDisplay();renderCoach();renderCheckIn();renderLog();
+  document.getElementById('streakNum').textContent=calcStreak();
+  confetti();
+}
+
+function showProfileModal(){
+  if(DS.name)document.getElementById('pName').value=DS.name;
+  if(DS.goal)document.getElementById('pGoal').value=DS.goal;
+  if(DS.activity)document.getElementById('pActivity').value=DS.activity;
+  document.getElementById('profileModal').classList.add('show');
+}
+function saveProfile(){
+  DS.name=document.getElementById('pName').value.trim();
+  DS.goal=document.getElementById('pGoal').value;
+  DS.activity=document.getElementById('pActivity').value;
+  saveDS();closeModal('profileModal');renderDash();
+}
+
+var GPRESETS=['Drink 3 litres of water','Sleep 8 hours','No sugar today','Walk 8,000 steps',
+  'Eat protein with every meal','No alcohol today','10 min meditation','Take vitamins',
+  'No junk food today','Take the stairs instead of the lift'];
+
+function showGoalModal(){
+  document.getElementById('goalPresets').innerHTML=GPRESETS.map(function(g){
+    return '<div onclick="setGP(this)" data-g="'+g+'" style="background:#E6F1FB;color:#0C447C;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer">'+g+'</div>';
+  }).join('');
+  document.getElementById('gText').value='';
+  document.getElementById('goalModal').classList.add('show');
+}
+function setGP(el){document.getElementById('gText').value=el.getAttribute('data-g');}
+function addGoal(){
+  var t=document.getElementById('gText').value.trim();if(!t)return;
+  DS.goals=DS.goals||[];DS.goals.push(t);saveDS();closeModal('goalModal');renderGoals();
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+// Call renderDash on load
+renderDash();
+
+</script>
+</body>
+</html>
